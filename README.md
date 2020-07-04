@@ -147,7 +147,20 @@ The default graphical user interface in EyeLoop is [*minimum-gui*.](https://gith
 None yet.
 
 ## References
-If you use any of this code or data, please cite [Arvin et al. 2020] (url).
+If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint](https://www.biorxiv.org/content/10.1101/2020.07.03.186387v1)).
+```latex
+@article {Arvin2020.07.03.186387,
+	author = {Arvin, Simon and Rasmussen, Rune and Yonehara, Keisuke},
+	title = {EyeLoop: An open-source, high-speed eye-tracker designed for dynamic experiments},
+	elocation-id = {2020.07.03.186387},
+	year = {2020},
+	doi = {10.1101/2020.07.03.186387},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2020/07/04/2020.07.03.186387},
+	eprint = {https://www.biorxiv.org/content/early/2020/07/04/2020.07.03.186387.full.pdf},
+	journal = {bioRxiv}
+}
+```
 
 ## License
 This project is licensed under the GNU General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. 
