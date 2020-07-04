@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.8"
+
+install:
+  - pip install numpy
+  - pip install opencv-python
+dist: xenial
+services:
+  - xvfb
+  
+script: python eyeloop.py --video 'examples/optokinetic reflex/Wild-type.avi'
