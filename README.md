@@ -12,6 +12,12 @@
 
 EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed-loop experiments on consumer-grade hardware. This software is actively maintained: Users are encouraged to contribute to its development.
 
+## Features ##
+- [x] **High-speed** on non-specialized hardware (no dedicated processing units necessary).
+- [x] Modular, readable, **customizable**. 
+- [x] **Open-source**, and entirely Python 3.
+- [x] Easily installed, works on any platform.
+- [x] **Actively maintained**.
 
 ## Installation
 Install EyeLoop simply by cloning the repository:
@@ -48,7 +54,7 @@ To access the video sequence, EyeLoop must be connected to an appropriate *impor
 ```
 python eyeloop.py --importer cv/vimba
 ```
-> [Click here](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) for more information on importers.
+> [Click here](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) for more information on *importers*.
 
 To perform offline eye-tracking, we pass the video argument ```--video``` with the path of the video sequence:
 ```
@@ -94,7 +100,7 @@ class Extractor:
 ```
 ```fetch()``` gains access to all eye-tracking data in real-time via the engine pointer.
 
-> [Click here](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) for more information on extractor modules.
+> [Click here](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) for more information on *extractors*.
 
 ### Data acquisition class ###
 
