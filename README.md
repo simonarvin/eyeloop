@@ -12,34 +12,57 @@
 
 EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed-loop experiments on consumer-grade hardware. This software is actively maintained: Users are encouraged to contribute to its development.
 
+## Features ##
+- [x] **High-speed** on non-specialized hardware (no dedicated processing units necessary).
+- [x] Modular, readable, **customizable**. 
+- [x] **Open-source**, and entirely Python 3.
+- [x] Easily installed, works on any platform.
+- [x] **Actively maintained**.
 
-## Installation
+## Overview ##
+- [How it works](#how-it-works)
+- [Getting started](#getting-started)
+- [Your first experiment](#designing-your-first-experiment)
+- [User interface](#graphical-user-interface)
+- [Authors](#authors)
+- [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples)
+
+## How it works ##
+<p align="center">
+<img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/software%20logic.svg?raw=true" width = "500">
+</p>
+
+EyeLoop consists of two functional domains: the engine and the optional modules. The engine performs the eye-tracking, whereas the modules perform optional tasks, such as:
+
+- Experiments
+- Data acquisition
+- Importing video sequences to the engine
+
+> The modules import or extract data from the engine, and are therefore called *Importers* and *Extractors*, respectively.
+
+One of EyeLoop's most appealing features is its modularity: Experiments are built simply by combining modules with the core Engine. Thus, the Engine has one task only: to compute eye-tracking data based on an *imported* sequence, and offer the generated data for *extraction*.
+
+> How does [the Engine](https://github.com/simonarvin/eyeloop/blob/master/engine/README.md) work?\
+> How does [the Importer](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) work?\
+> How does [the Extractor](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) work?
+
+## Getting started ##
+
+### Installation ###
+
 Install EyeLoop simply by cloning the repository:
 ```
 git clone https://github.com/simonarvin/eyeloop.git
 ```
 
-**Dependencies:**
+>Dependencies:
+>- numpy: ```python pip install numpy```
+>- opencv: ```python pip install opencv-python```
 
-- numpy: ```python pip install numpy```
+---
 
-- opencv: ```python pip install opencv-python```
+### Initiation ###
 
-## Software logic
-<p align="center">
-<img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/software%20logic.svg?raw=true" width = "500">
-</p>
-
-EyeLoop consists of two domains: the engine and the optional modules. The engine performs the eye-tracking, whereas the modules are used to:
-
-- Experiments
-- Data acqusition
-- Feed video sequence to the engine
-- etc.
-
-Thus, the modules import and/or extract data from the engine.
-
-## Getting started
 EyeLoop is initiated through the command-line interface.
 ```
 python eyeloop.py
@@ -48,7 +71,7 @@ To access the video sequence, EyeLoop must be connected to an appropriate *impor
 ```
 python eyeloop.py --importer cv/vimba
 ```
-> [Click here](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) for more information on importers.
+> [Click here](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) for more information on *importers*.
 
 To perform offline eye-tracking, we pass the video argument ```--video``` with the path of the video sequence:
 ```
@@ -71,7 +94,7 @@ To see all command-line arguments, pass:
 python eyeloop.py --help
 ```
 
-## Designing your first experiment
+## Designing your first experiment ##
 
 <p align="center">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/setup.svg?raw=true" align="center" height="250">
@@ -94,7 +117,7 @@ class Extractor:
 ```
 ```fetch()``` gains access to all eye-tracking data in real-time via the engine pointer.
 
-> [Click here](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) for more information on extractor modules.
+> [Click here](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) for more information on *extractors*.
 
 ### Data acquisition class ###
 
@@ -129,7 +152,7 @@ By using ```fetch()```, we shift the phase of the sine function at every time-st
         self.phase += self.frequency
         sine = numpy.sin(self.phase) * .5 + .5
         brightness = numpy.ones((height, width), dtype=float) * sine
-        cv2.imshow("Experiment", source)
+        cv2.imshow("Experiment", brightness)
 ```
 
 That's it! Test your experiment using:
@@ -138,15 +161,15 @@ python eyeloop.py
 ```
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
 
-## Graphical user interface
+## Graphical user interface ##
 The default graphical user interface in EyeLoop is [*minimum-gui*.](https://github.com/simonarvin/eyeloop/blob/master/guis/minimum/README.md)
 
-> EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instruction on how to build your own.
+> EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instructions on how to build your own.
 
-## Known issues
+## Known issues ##
 None yet.
 
-## References
+## References ##
 If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint](https://www.biorxiv.org/content/10.1101/2020.07.03.186387v1)).
 ```latex
 @article {Arvin2020.07.03.186387,
@@ -162,10 +185,10 @@ If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint]
 }
 ```
 
-## License
+## License ##
 This project is licensed under the GNU General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. 
 
-## Authors
+## Authors ##
     
 **Lead Developer:**
 Simon Arvin, sarv@dandrite.au.dk
@@ -180,8 +203,8 @@ Simon Arvin, sarv@dandrite.au.dk
 - Keisuke Yonehara, keisuke.yonehara@dandrite.au.dk
 
 **Corresponding Author:**
-Keisuke Yonehera, keisuke.yonehara@dandrite.au.dk
- 
+Keisuke Yonehera, keisuke.yonehara@dandrite.au.dk</br></br>
+
 ---
 <p align="center">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/aarhusuniversity.svg?raw=true" align="center" height="40">&nbsp;&nbsp;&nbsp;&nbsp;
