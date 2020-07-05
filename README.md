@@ -23,6 +23,7 @@ EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed
 - [How it works](#how-it-works)
 - [Getting started](#getting-started)
 - [Your first experiment](#designing-your-first-experiment)
+- [User interface](#graphical-user-interface)
 - [Authors](#authors)
 - [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples)
 
@@ -151,7 +152,7 @@ By using ```fetch()```, we shift the phase of the sine function at every time-st
         self.phase += self.frequency
         sine = numpy.sin(self.phase) * .5 + .5
         brightness = numpy.ones((height, width), dtype=float) * sine
-        cv2.imshow("Experiment", source)
+        cv2.imshow("Experiment", brightness)
 ```
 
 That's it! Test your experiment using:
@@ -163,7 +164,7 @@ python eyeloop.py
 ## Graphical user interface ##
 The default graphical user interface in EyeLoop is [*minimum-gui*.](https://github.com/simonarvin/eyeloop/blob/master/guis/minimum/README.md)
 
-> EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instruction on how to build your own.
+> EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instructions on how to build your own.
 
 ## Known issues ##
 None yet.
@@ -202,8 +203,8 @@ Simon Arvin, sarv@dandrite.au.dk
 - Keisuke Yonehara, keisuke.yonehara@dandrite.au.dk
 
 **Corresponding Author:**
-Keisuke Yonehera, keisuke.yonehara@dandrite.au.dk
- 
+Keisuke Yonehera, keisuke.yonehara@dandrite.au.dk</br></br>
+
 ---
 <p align="center">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/aarhusuniversity.svg?raw=true" align="center" height="40">&nbsp;&nbsp;&nbsp;&nbsp;
