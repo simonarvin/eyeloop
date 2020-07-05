@@ -30,16 +30,16 @@ class Engine:
 
 Finally, the Extractor array is loaded by the Engine at each time-step:
 ```python
-def run_extractors(self) -> None:
-        for extractor in self.extractors:
-                extractor.fetch(self)
+    def run_extractors(self) -> None:
+            for extractor in self.extractors:
+                    extractor.fetch(self)
 ```
 
 At the termination of the Engine, the Extractor array is *released*:
 ```python
-def release(self) -> None:
-        for extractor in self.extractors:
-            extractor.release()
+    def release(self) -> None:
+            for extractor in self.extractors:
+                extractor.release()
 ```
 
 ## Building your first custom Extractor ##
