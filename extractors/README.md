@@ -6,10 +6,10 @@
 
 Extractors form the *executive branch* of EyeLoop: Experiments, such as open- or closed-loops, are designed using Extractors. Similarly, data acquisition utilizes the Extractor class. So how does it work?
 
-## Structure ##
+## Why use an Extractor ##
 To do.
 
-## Utilization ##
+## Context ##
 
 Extractors are utilized by EyeLoop's *Engine* via the *Extractor array*. Users must first *load* all extractors into the Engine via *EyeLoop.py*:
 ```python
@@ -22,15 +22,25 @@ class EyeLoop:
 
 The Extractor array is *activated* by the Engine when the trial is initiated:
 ```python
-def activate(self) -> None:
-        for extractor in self.extractors:
-            extractor.activate()
+class Engine:
+    def activate(self) -> None:
+            for extractor in self.extractors:
+                extractor.activate()
 ```
 
-Finally, at every time-step, the Engine calls the Extractor ```fetch()``` function:
+Finally, the Extractor array is loaded by the Engine at each time-step:
 ```python
-def fetch(self, engine) -> None:
-    (do something)
-    ...
+def run_extractors(self) -> None:
+        for extractor in self.extractors:
+                extractor.fetch(self)
 ```
-The ```fetch()``` function has access to all eye-tracking data as it is computed via the Engine pointer, engine.            
+
+At the termination of the Engine, the Extractor array is *released*:
+```python
+def release(self) -> None:
+        for extractor in self.extractors:
+            extractor.release()
+```
+
+## Building your first custom Extractor ##
+To do.
