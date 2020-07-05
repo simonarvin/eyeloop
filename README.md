@@ -24,25 +24,30 @@ EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed
 - [Getting started](#getting-started)
 - [Your first experiment](#designing-your-first-experiment)
 - [Authors](#authors)
+- [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples)
 
 ## How it works ##
 <p align="center">
 <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/software%20logic.svg?raw=true" width = "500">
 </p>
 
-Todo: more text here.
-EyeLoop consists of two domains: the engine and the optional modules. The engine performs the eye-tracking, whereas the modules are used to:
+EyeLoop consists of two functional domains: the engine and the optional modules. The engine performs the eye-tracking, whereas the modules perform optional tasks, such as:
 
 - Experiments
-- Data acqusition
-- Feed video sequence to the engine
-- etc.
+- Data acquisition
+- Importing video sequences to the engine
 
-Thus, the modules import and/or extract data from the engine.
+> The modules import or extract data from the engine, and are therefore called *Importers* and *Extractors*, respectively.
+
+One of EyeLoop's most appealing features is its modularity: Experiments are built simply by combining modules with the core Engine. Thus, the Engine has one task only: to compute eye-tracking data based on an *imported* sequence, and offer the generated data for *extraction*.
+
+> How does [the Engine](https://github.com/simonarvin/eyeloop/blob/master/engine/README.md) work?\
+> How does [the Importer](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) work?\
+> How does [the Extractor](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) work?
 
 ## Getting started ##
 
-**Installation**
+### Installation ###
 
 Install EyeLoop simply by cloning the repository:
 ```
@@ -55,7 +60,7 @@ git clone https://github.com/simonarvin/eyeloop.git
 
 ---
 
-**Initiation**
+### Initiation ###
 
 EyeLoop is initiated through the command-line interface.
 ```
