@@ -67,11 +67,11 @@ class Engine:
         Assign additional extractors to core engine via eyeloop.py.
         """
 
-        for interface in self.extractors:
+        for extractor in self.extractors:
             try:
-                interface.fetch(self)
+                extractor.fetch(self)
             except Exception as e:
-                print("Error in module class: {}".format(interface.__name__))
+                print("Error in module class: {}".format(extractor.__name__))
                 print("Error message: ", e)
 
     def record(self) -> None:
@@ -195,12 +195,12 @@ class Engine:
     def activate(self) -> None:
         """
         Ativates all extractors.
-        The interface activate() function is optional.
+        The extractor activate() function is optional.
         """
 
-        for interface in self.extractors:
+        for extractor in self.extractors:
             try:
-                interface.activate()
+                extractor.activate()
             except:
                 pass
 
@@ -216,9 +216,9 @@ class Engine:
         except:
             pass
 
-        for interface in self.extractors:
+        for extractor in self.extractors:
             try:
-                interface.release()
+                extractor.release()
             except:
                 pass
 
