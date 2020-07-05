@@ -19,23 +19,18 @@ EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed
 - [x] Easily installed, works on any platform.
 - [x] **Actively maintained**.
 
-## Installation
-Install EyeLoop simply by cloning the repository:
-```
-git clone https://github.com/simonarvin/eyeloop.git
-```
+## Overview ##
+- [How it works](#how-it-works)
+- [Getting started](#getting-started)
+- [Your first experiment](#designing-your-first-experiment)
+- [Authors](#authors)
 
-**Dependencies:**
-
-- numpy: ```python pip install numpy```
-
-- opencv: ```python pip install opencv-python```
-
-## Software logic
+## How it works ##
 <p align="center">
 <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/software%20logic.svg?raw=true" width = "500">
 </p>
 
+Todo: more text here.
 EyeLoop consists of two domains: the engine and the optional modules. The engine performs the eye-tracking, whereas the modules are used to:
 
 - Experiments
@@ -45,7 +40,23 @@ EyeLoop consists of two domains: the engine and the optional modules. The engine
 
 Thus, the modules import and/or extract data from the engine.
 
-## Getting started
+## Getting started ##
+
+**Installation**
+
+Install EyeLoop simply by cloning the repository:
+```
+git clone https://github.com/simonarvin/eyeloop.git
+```
+
+>Dependencies:
+>- numpy: ```python pip install numpy```
+>- opencv: ```python pip install opencv-python```
+
+---
+
+**Initiation**
+
 EyeLoop is initiated through the command-line interface.
 ```
 python eyeloop.py
@@ -77,7 +88,7 @@ To see all command-line arguments, pass:
 python eyeloop.py --help
 ```
 
-## Designing your first experiment
+## Designing your first experiment ##
 
 <p align="center">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/setup.svg?raw=true" align="center" height="250">
@@ -144,15 +155,15 @@ python eyeloop.py
 ```
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
 
-## Graphical user interface
+## Graphical user interface ##
 The default graphical user interface in EyeLoop is [*minimum-gui*.](https://github.com/simonarvin/eyeloop/blob/master/guis/minimum/README.md)
 
 > EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instruction on how to build your own.
 
-## Known issues
+## Known issues ##
 None yet.
 
-## References
+## References ##
 If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint](https://www.biorxiv.org/content/10.1101/2020.07.03.186387v1)).
 ```latex
 @article {Arvin2020.07.03.186387,
@@ -168,10 +179,10 @@ If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint]
 }
 ```
 
-## License
+## License ##
 This project is licensed under the GNU General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. 
 
-## Authors
+## Authors ##
     
 **Lead Developer:**
 Simon Arvin, sarv@dandrite.au.dk
