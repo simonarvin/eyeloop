@@ -243,15 +243,19 @@ class GUI:
 
         cv2.imshow("CONFIGURATION", np.hstack((self.PStock, self.PStock)))
         cv2.imshow("BINARY", np.vstack((self.PStock, self.PStock)))
-        cv2.setMouseCallback("CONFIGURATION", self.mousecallback)
 
-        cv2.moveWindow("BINARY", 105 + width * 2,100)
-        cv2.moveWindow("CONFIGURATION", 100,100)
+
+        cv2.moveWindow("BINARY", 105 + width * 2, 100)
+        cv2.moveWindow("CONFIGURATION", 100, 100)
 
         cv2.imshow("Tool tip", self.first_tool_tip)
 
         cv2.moveWindow("Tool tip", 100, 100 + height + 100)
-        cv2.setMouseCallback("Tool tip", self.tip_mousecallback)
+        try:
+            cv2.setMouseCallback("CONFIGURATION", self.mousecallback)
+            cv2.setMouseCallback("Tool tip", self.tip_mousecallback)
+        except:
+            print("Could not bind mouse-buttons.")
 
 
     def place_cross(self, source:np.ndarray, point:tuple, color:tuple) -> None:
