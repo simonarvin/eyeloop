@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from utilities.general_operations import to_int, tuple_int
 from constants.minimum_gui_constants import *
-
+import config
 import os
 
 class GUI:
@@ -17,17 +17,6 @@ class GUI:
         self.inquiry        =   "none"
         self.terminate      =   -1
 
-    def load_engine(self, ENGINE) -> None:
-        self.ENGINE = ENGINE
-        self.pupil_processor = ENGINE.pupil_processor
-
-        self.cr_index = 0
-        self.current_cr_processor = self.ENGINE.cr_processors[0] #primary corneal reflection
-
-        if ENGINE.arguments.markers == False:
-            self.place_markers = lambda: None
-        else:
-            self.place_markers = self.rplace_markers
 
     def tip_mousecallback(self, event, x:int, y:int, flags, params) -> None:
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -74,7 +63,7 @@ class GUI:
                 self._state = "tracking"
                 self.inquiry = "none"
 
-                self.ENGINE.activate()
+                config.engine.activate()
 
                 return
             elif "n"==key:
@@ -85,28 +74,28 @@ class GUI:
 
         if self._state == "adjustment":
             if key == "p":
-                self.ENGINE.angle-=5
+                config.engine.angle-=5
 
             elif key == "o":
-                self.ENGINE.angle+=5
+                config.engine.angle+=5
 
             elif key =="b":
 
-                self.ENGINE.marks.append(self.cursor)
+                config.engine.marks.append(self.cursor)
 
             elif key == "v":
                 try:
-                    self.ENGINE.marks.pop()
+                    config.engine.marks.pop()
                 except:
                     #empty list
                     pass
 
             elif "1"==key:
                 try:
-                    self.ENGINE.pupil = self.cursor
-                    self.pupil_processor.reset(self.cursor,np.mean(self.ENGINE.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
+                    config.engine.pupil = self.cursor
+                    self.pupil_processor.reset(self.cursor,np.mean(config.engine.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
 
-                    self.ENGINE.refresh_pupil = self.pupil_processor.refresh_source
+                    config.engine.refresh_pupil = self.pupil_processor.refresh_source
                     #self.pupil_processor.track()
                     self.update_tool_tip(4)
 
@@ -122,9 +111,9 @@ class GUI:
             elif "2"==key:
                 try:
 
-                    self.current_cr_processor = self.ENGINE.cr_processors[0]
+                    self.current_cr_processor = config.engine.cr_processors[0]
 
-                    self.current_cr_processor.reset(self.cursor,np.mean(self.ENGINE.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
+                    self.current_cr_processor.reset(self.cursor,np.mean(config.engine.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
 
                     self.update_tool_tip(2)
 
@@ -139,9 +128,9 @@ class GUI:
             elif "3"==key:
                 try:
                     self.update_tool_tip(2)
-                    self.current_cr_processor = self.ENGINE.cr_processors[1]
+                    self.current_cr_processor = config.engine.cr_processors[1]
 
-                    self.current_cr_processor.reset(self.cursor,np.mean(self.ENGINE.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
+                    self.current_cr_processor.reset(self.cursor,np.mean(config.engine.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
 
 
                     print("\nCorneal reflex selected.")
@@ -154,9 +143,9 @@ class GUI:
             elif "4"==key:
                 try:
                     self.update_tool_tip(2)
-                    self.current_cr_processor = self.ENGINE.cr_processors[2]
+                    self.current_cr_processor = config.engine.cr_processors[2]
 
-                    self.current_cr_processor.reset(self.cursor,np.mean(self.ENGINE.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
+                    self.current_cr_processor.reset(self.cursor,np.mean(config.engine.source[self.cursor[1]-1:self.cursor[1]+1,self.cursor[0]-1:self.cursor[0]+1]))
 
                     print("\nCorneal reflex selected.")
                     print("Adjust binarization via W/S (threshold) and E/D (smoothing).")
@@ -209,9 +198,19 @@ class GUI:
 
         if "q"==key:
             #Terminate tracking
-            self.ENGINE.release()
+            config.engine.release()
 
     def arm(self, width:int, height:int) -> None:
+
+        self.pupil_processor = config.engine.pupil_processor
+
+        self.cr_index = 0
+        self.current_cr_processor = config.engine.cr_processors[0] #primary corneal reflection
+
+        if config.arguments.markers == False:
+            self.place_markers = lambda: None
+        else:
+            self.place_markers = self.rplace_markers
 
         self.width, self.height = width, height
         self.binary_width = max(width, 300)
@@ -266,12 +265,12 @@ class GUI:
             pass
 
     def rplace_markers(self, source:np.ndarray) -> None:
-        for i, mark in enumerate(self.ENGINE.marks):
+        for i, mark in enumerate(config.engine.marks):
             self.place_cross(source, mark, blue)
             if (i % 2) == 0:
                 try:
-                    self.place_cross(source, self.ENGINE.marks[i+1], pink)
-                    cv2.rectangle(source, mark, self.ENGINE.marks[i+1], blue)
+                    self.place_cross(source, config.engine.marks[i+1], pink)
+                    cv2.rectangle(source, mark, config.engine.marks[i+1], blue)
                 except:
                     #odd number of marks
                     break
@@ -279,17 +278,17 @@ class GUI:
     def update_record(self, frame_preview) -> None:
         cv2.imshow("Recording", frame_preview)
         if cv2.waitKey(1) == ord('q'):
-            self.ENGINE.release()
+            config.engine.release()
 
     def update_track(self) -> None:
-        frame_preview = cv2.cvtColor(self.ENGINE.source, cv2.COLOR_GRAY2BGR)
+        frame_preview = cv2.cvtColor(config.engine.source, cv2.COLOR_GRAY2BGR)
         frame_source = frame_preview.copy()
         Processor = self.pupil_processor
 
         cr_width = pupil_width = -1
 
         self.rplace_markers(frame_preview)
-        for index, cr_processor in enumerate(self.ENGINE.cr_processors):
+        for index, cr_processor in enumerate(config.engine.cr_processors):
             if cr_processor.active:
 
                 cr_corners = cr_processor.corners
@@ -364,7 +363,7 @@ class GUI:
             frame_preview[0:self.height, 0:1] = 0
 
 
-            cv2.putText(frame_source, "#"+str(self.ENGINE.importer.frame), (to_int(self.width/2),12), font, .7, (255,255,255), 0, cv2.LINE_4)
+            cv2.putText(frame_source, "#"+str(config.importer.frame), (to_int(self.width/2),12), font, .7, (255,255,255), 0, cv2.LINE_4)
             i=0
             while i < 5:
                 frame_source[to_int(self.height*i/5)-1:to_int(self.height*i/5)+1,0:self.width]=(100,100,100)
@@ -378,7 +377,7 @@ class GUI:
             self.key = cv2.waitKey(50)
 
             if self.key == ord("-"):
-                cv2.imwrite("screen_cap_fr{}.jpg".format(self.importer.frame), frame_preview)
+                cv2.imwrite("screen_cap_fr{}.jpg".format(config.importer.frame), frame_preview)
 
             self.key_listener(self.key)
 
@@ -391,4 +390,4 @@ class GUI:
             key = cv2.waitKey(1)
 
             if key == ord("q"):
-                self.ENGINE.release()
+                config.engine.release()
