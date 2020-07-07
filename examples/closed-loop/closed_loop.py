@@ -3,7 +3,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 
-class BTHandler:
+class ClosedLoop_Extractor:
     def __init__(self, x = -0, y = 0, w = 100, h=100):
         """
         RUN CALIBRATE, THEN SET MAXSIZE ACCORDINGLY
