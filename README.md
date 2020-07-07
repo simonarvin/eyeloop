@@ -16,7 +16,7 @@ EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed
 - [x] **High-speed** on non-specialized hardware (no dedicated processing units necessary).
 - [x] Modular, readable, **customizable**. 
 - [x] **Open-source**, and entirely Python 3.
-- [x] Easily installed, works on any platform.
+- [x] **Works on any platform**, easy installation.
 - [x] **Actively maintained**.
 
 ## Overview ##
