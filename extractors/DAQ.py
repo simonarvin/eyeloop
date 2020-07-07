@@ -8,9 +8,9 @@ class DAQ_extractor:
         filename = "{}/log{}.json".format(dir, timestamp)
         self.log = open(filename, 'w')
 
-    def fetch(self, core):
+    def fetch(self, engine):
         try:
-            self.log.write(json.dumps(core.dataout)+"\n")
+            self.log.write(json.dumps(engine.dataout)+"\n")
         except:
             pass
 

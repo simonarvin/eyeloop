@@ -1,11 +1,25 @@
 import cv2
 from utilities.general_operations import check_path_type
 from importers.importer import IMPORTER
+import config
 
 class Importer(IMPORTER):
+<<<<<<< Updated upstream
     def __init__(self, ENGINE) -> None:
         super().__init__(ENGINE)
 
+<<<<<<< HEAD
+=======
+        arguments = ENGINE.arguments
+        self.ENGINE = ENGINE
+        self.path = video = arguments.video
+=======
+    def __init__(self) -> None:
+        super().__init__()
+
+    def start(self)->None:
+>>>>>>> Stashed changes
+>>>>>>> in-progress
         pathtype = check_path_type(self.path)
 
         # load first frame
@@ -16,13 +30,22 @@ class Importer(IMPORTER):
             height         =   self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
             _, image    =   self.capture.read()
-            image=image[...,0]
 
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         elif pathtype == "folder":
 
-            self.file_manager.input_folderpath = self.path
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
 
-            image = self.file_manager.read_image(self.frame)
+>>>>>>> in-progress
+            self.file_manager.input_folderpath = self.path
+=======
+            config.file_manager.input_folderpath = self.path
+
+            image = config.file_manager.read_image(self.frame)
+>>>>>>> Stashed changes
+
             try:
                 height, width, _ = image.shape
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -31,6 +54,7 @@ class Importer(IMPORTER):
                 height, width = image.shape
                 self.route_frame = self.route_sequence_flat
 
+
         self.arm(width, height, image)
 
 
@@ -38,32 +62,28 @@ class Importer(IMPORTER):
         try:
             while True:
                 self.route_frame()
-        except:
+        except Exception as e:
+            print(e)
             print("Importer released.")
 
+    def proceed(self, image) -> None:
+        image = self.resize(image)
+        image = self.rotate(image, config.engine.angle)
+        config.engine.update_feed(image)
+        self.save(image)
+        self.frame += 1
 
     def route_sequence_sing(self) -> None:
 
-        image = self.file_manager.read_image(self.frame)[...,0]
+        image = config.file_manager.read_image(self.frame)[...,0]
+        self.proceed(image)
 
-        image = self.resize(image)
-        image = self.rotate(image, self.ENGINE.angle)
-        self.ENGINE.update_feed(image)
-        self.save(image)
-        self.frame += 1
 
     def route_sequence_flat(self) -> None:
 
-        image = self.file_manager.read_image(self.frame)
+        image = config.file_manager.read_image(self.frame)
 
-        image=self.rotate(image, self.ENGINE.angle)
-
-        image=self.resize(image)
-
-        self.ENGINE.update_feed(image)
-        self.save(image)
-        self.frame += 1
-
+        self.proceed(image)
 
     def route_cam(self) -> None:
         """
@@ -76,12 +96,7 @@ class Importer(IMPORTER):
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        image = self.rotate(image, self.ENGINE.angle)
-        image = self.resize(image)
-
-        self.ENGINE.update_feed(image)
-        self.save(image)
-        self.frame+=1
+        self.proceed(image)
 
 
     def release(self) -> None:

@@ -2,27 +2,26 @@ import cv2
 import time
 import numpy as np
 
+import config
 from engine.processor import Shape
 from constants.engine_constants import *
 from utilities.general_operations import to_int, tuple_int
 
 class Engine:
-    def __init__(self, eyeloop, gui, file_manager, arguments):
+    def __init__(self, eyeloop):
 
         self.live = True #Access this to check if Core is running.
-        self.arguments = arguments
-        self.eyeloop = eyeloop
-        self.model = arguments.model  #   Used for assigning appropriate circular model.
-        #self.importer SET BY importer ITSELF
-        self.file_manager = file_manager
 
-        if arguments.markers == False:  #   Markerless. -m 0 (default)
+        self.eyeloop = eyeloop
+        self.model = config.arguments.model  #   Used for assigning appropriate circular model.
+
+        if config.arguments.markers == False:  #   Markerless. -m 0 (default)
             self.place_markers = lambda: None
         else:                           #   Enables markers to remove artifacts. -m 1
             self.place_markers = self.real_place_markers
         self.marks          =   []
 
-        if arguments.tracking == 0:   #   Recording mode. --tracking 0
+        if config.arguments.tracking == 0:   #   Recording mode. --tracking 0
             self.iterate = self.record
         else:                       #   Tracking mode. --tracking 1 (default)
             self.iterate = self.track
@@ -36,9 +35,6 @@ class Engine:
         max_cr_processor    =   3
         self.cr_processors  =   [Shape(self, type = 2) for _ in range(max_cr_processor)]
         self.pupil_processor=   Shape(self)
-
-        self.gui = gui
-        gui.load_engine(self)
 
         #   Via "gui", assign "refresh_pupil" to function "processor.refresh_source"
         #   when the pupil has been selected.
@@ -85,7 +81,7 @@ class Engine:
 
         self.dataout = {
         "time" : timestamp,
-        "frame" : self.importer.frame,
+        "frame" : config.importer.frame,
         "blink" : -1,
         "cr_dim" : -1,
         "cr_cen" : -1,
@@ -95,7 +91,7 @@ class Engine:
         "pupil_ang" : -1
         }
 
-        self.gui.update_record(self.source)
+        config.graphical_user_interface.update_record(self.source)
 
         self.run_extractors()
 
@@ -105,7 +101,7 @@ class Engine:
         self.norm_cr_artefact = int(3 * self.norm)
 
         self.width, self.height = width, height
-        self.gui.arm(width, height)
+        config.graphical_user_interface.arm(width, height)
 
         self.update_feed(image)
 
@@ -169,7 +165,7 @@ class Engine:
             blink = 1
 
         try:
-            self.gui.update_track()
+            config.graphical_user_interface.update_track()
         except Exception as e:
             print("Error! Did you assign the graphical user interface (GUI) correctly?")
             print("Error message: ", e)
@@ -180,7 +176,7 @@ class Engine:
 
         self.dataout = {
         "time" : timestamp,
-        "frame" : self.importer.frame,
+        "frame" : config.importer.frame,
         "blink" : blink,
         "cr_dim" : (cr_width, cr_height),
         "cr_cen" : cr_center,
@@ -212,7 +208,7 @@ class Engine:
         self.live = False
 
         try:
-            self.importer.release()
+            config.importer.release()
         except:
             pass
 
