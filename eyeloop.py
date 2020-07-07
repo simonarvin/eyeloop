@@ -3,6 +3,8 @@ sys.path.append('../')
 
 from engine.engine import Engine
 
+from importers.vimba import Importer
+
 from utilities.format_print import clear, welcome
 from utilities.argument_parser import Arguments
 from utilities.file_manager import File_Manager
@@ -44,7 +46,7 @@ class EyeLoop:
         except Exception as e:
             print("Invalid importer selected.\n", e)
 
-        importer  =   Importer(ENGINE)
+        importer = Importer(ENGINE)
 
         importer.route()
 
