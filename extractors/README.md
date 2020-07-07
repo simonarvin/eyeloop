@@ -71,7 +71,7 @@ An experiment *Extractor* might activate the experiment when the trial is initia
 ### 3: ```fetch``` ###
 
 <p align="center">
-    <img src="https://github.com/simonarvin/eyeloop/blob/in-progress/misc/imgs/extractor_scheme.svg?raw=true" align="center" width = "350">
+    <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/extractor_scheme.svg?raw=true" align="center" width = "350">
   </p>
 
 The ```fetch()``` function is called at the end of every time-step. It receives the *Engine* pointer, gaining access to all eye-tracking data in real-time. 
@@ -90,7 +90,7 @@ A data acquisition *Extractor* would fetch the data via ```Engine.dataout``` and
 
 ### 4: ```release``` ###
 
-The ```release()``` function is called when the Engine is terminated.
+The ```release()``` function is called when the *Engine* is terminated.
 ```python
     ...
         def release(self):
