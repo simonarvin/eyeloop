@@ -4,11 +4,10 @@ import time
 import matplotlib.pyplot as plt
 
 class ClosedLoop_Extractor:
-    def __init__(self, x = -0, y = 0, w = 100, h=100):
+    def __init__(self, MAXSIZE = 3231, x = -0, y = 0, w = 100, h=100):
         """
         RUN CALIBRATE, THEN SET MAXSIZE ACCORDINGLY
         """
-        MAXSIZE = 3231
 
         self.basesize = MAXSIZE / 2
         self.size = 0

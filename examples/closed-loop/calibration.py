@@ -3,7 +3,7 @@ import numpy as np
 import time
 
 
-class Calibration_Handler:
+class Calibration_Extractor:
     def __init__(self, x = -1920, y = -50, w = 1920,h=1080):
         self.x, self.y = x, y
         self.raw = np.zeros((h,w), dtype=float)
