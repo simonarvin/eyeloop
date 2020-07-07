@@ -5,7 +5,7 @@ import time
 
 class Open_Loop_extractor():
     def __init__(self, x:int = 50, y:int = 50, w:int = 50, h:int = 50) -> None:
-        
+
         self.fetch = lambda x: None
 
         self.raw = np.ones((h, w), dtype=float)
@@ -107,7 +107,7 @@ class Open_Loop_extractor():
             print("     {} set to {}".format(key, value))
             exec("self." + key + '=' + str(value))
 
-    def r_fetch(self, core):
+    def r_fetch(self, engine):
         if self.state == 2:
             #WHITE
             source = self.raw * 255
@@ -124,21 +124,21 @@ class Open_Loop_extractor():
             self.phase += self.frequency
 
         step = self.protocol[self.index]
-        core.dataout["open_looptest"] = source[0][0]
-        core.dataout["open_loopparam"] = step
+        engine.dataout["open_looptest"] = source[0][0]
+        engine.dataout["open_loopparam"] = step
 
         self.current = self.timer()
         if self.condition(step):
             self.index += 1
-            core.dataout["trigger"] = 1
+            engine.dataout["trigger"] = 1
             if self.index == len(self.protocol):
                 print("Protocol finished. Terminating Puptrack..")
-                core.release()
+                engine.release()
                 return
             else:
                 self.change_parameters(self.protocol[self.index])
         else:
-            core.dataout["trigger"] = 0
+            engine.dataout["trigger"] = 0
 
         cv2.imshow("Open-loop", source)
         cv2.moveWindow("Open-loop", self.x, self.y)

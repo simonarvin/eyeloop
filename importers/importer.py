@@ -1,8 +1,18 @@
 import numpy as np
 import cv2
 from utilities.general_operations import tuple_int
+import config
 
 class IMPORTER:
+<<<<<<< Updated upstream
+=======
+    def __init__(self):
+        self.live = True
+        self.scale = config.arguments.scale
+        self.frame          =   0
+        self.path = config.arguments.video
+
+>>>>>>> Stashed changes
     def arm(self, width, height, image):
         self.frame          =   0
         self.dimensions = tuple_int((width * self.scale, height * self.scale))
@@ -14,8 +24,7 @@ class IMPORTER:
         self.resize(image)
 
         #image = self.rotate(image, self.ENGINE.angle)
-        self.ENGINE.importer = self
-        self.ENGINE.arm(width, height, image)
+        config.engine.arm(width, height, image)
 
     def rotate(self, image:np.ndarray, angle:int) -> np.ndarray:
         """
@@ -37,4 +46,4 @@ class IMPORTER:
         return cv2.resize(image, None, fx = self.scale, fy = self.scale, interpolation = cv2.INTER_NEAREST)
 
     def save(self, image:np.ndarray) -> None:
-        self.file_manager.save_image(image, self.frame)
+        config.file_manager.save_image(image, self.frame)

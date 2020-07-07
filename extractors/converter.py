@@ -16,8 +16,6 @@ class Conversion_extractor:
             self.bulbucorneal_distance = 4.6 #human
 
 
-
-
         self.err_fraction = self.effective_rotation_radius/(self.effective_rotation_radius - self.bulbucorneal_distance)
 
         self.interfaces = interfaces

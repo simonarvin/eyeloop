@@ -12,6 +12,8 @@ from extractors.frametimer import FPS_extractor
 
 from guis.minimum.minimum_gui import GUI
 
+import config
+
 
 class EyeLoop:
     """
@@ -23,30 +25,32 @@ class EyeLoop:
 
         welcome("Server")
 
-        arguments = Arguments()
-        file_manager = File_Manager(dir = arguments.destination)
-        print(arguments.video)
-        graphical_user_interface = GUI()
+        config.arguments = Arguments()
+        config.file_manager = File_Manager(dir = config.arguments.destination)
 
-        ENGINE = Engine(self, graphical_user_interface, file_manager, arguments)
+        config.graphical_user_interface = GUI()
+
+        config.engine = Engine(self)
 
         fps_counter = FPS_extractor()
-        data_acquisition = DAQ_extractor(file_manager.new_folderpath)
+        data_acquisition = DAQ_extractor(config.file_manager.new_folderpath)
 
 
         extractors = [fps_counter, data_acquisition]
-        ENGINE.load_extractors(extractors)
+        config.engine.load_extractors(extractors)
 
         try:
-            print("Initiating tracking via {}".format(arguments.importer))
-            import_command = "from importers.{} import Importer".format(arguments.importer)
+            print("Initiating tracking via {}".format(config.arguments.importer))
+            import_command = "from importers.{} import Importer".format(config.arguments.importer)
+
             exec(import_command, globals())
+
         except Exception as e:
             print("Invalid importer selected.\n", e)
 
-        importer  =   Importer(ENGINE)
-
-        importer.route()
+        config.importer  =   Importer()
+        config.importer.start()
+        config.importer.route()
 
 
 if __name__ == '__main__':

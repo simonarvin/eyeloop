@@ -14,6 +14,7 @@ class File_Manager:
     def __init__(self, dir:str) -> None:
 
         self.directory = dir + "/data"
+        self.input_folderpath = ""
 
         try:
             os.mkdir(self.directory)
