@@ -20,8 +20,7 @@ class Circle:
 
             self.dimensions_int = tuple_int((radius, radius))
 
-        except Exception as e:
-            print("Circle-fit alg error: ", e)
+        except:
             return False
 
         return True

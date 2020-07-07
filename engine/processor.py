@@ -4,9 +4,10 @@ from engine.models.ellipsoid import Ellipse
 from engine.models.circular import Circle
 from utilities.general_operations import to_int, distance, tuple_int
 from constants.processor_constants import *
+import config
 
 class Shape():
-    def __init__(self, ENGINE, type=1):
+    def __init__(self, type=1):
 
         self.active             = False
         self.center             =   -1
@@ -14,12 +15,11 @@ class Shape():
         self.walkout_offset     =   0
         self.binarythreshold    =   -1
         self.blur               =   9
-        self.ENGINE             =   ENGINE
         self.type               =   type
         self.cropsource         =   -1
         self.corners            =   -1
         self.center_index       =   0
-        self.model             =   self.ENGINE.model
+        self.model              =   config.arguments.model
         self.walkout            =   Contour(self, type)
 
         self.parameters         =   0
@@ -76,7 +76,7 @@ class Shape():
         point_offset        =   mesh.T.reshape(-1, 2)
         self.original_center=   [(center[0] + p[0], center[1] + p[1]) for p in point_offset]
 
-        self.standard_corners   =   [(0, 0), (self.ENGINE.width, self.ENGINE.height)]
+        self.standard_corners   =   [(0, 0), (config.engine.width, config.engine.height)]
         self.corners        =   self.standard_corners.copy()
 
     def track(self):
@@ -117,17 +117,17 @@ class Shape():
             #The multiplication factor, here .4, returns slightly below the average.
             self.walkout_offset    =   int(.4*(width + height))
 
-            self.margin = np.amax(ellipse.dimensions_int) * 2
+            self.margin = np.amax(ellipse.dimensions_int) * 3
             center_int = tuple_int(center)
 
             self.corners[0] = (max(center_int[0] - self.margin, 0), max(center_int[1] - self.margin, 0))
-            self.corners[1] = (min(center_int[0] + self.margin, self.ENGINE.width), min(center_int[1] + self.margin, self.ENGINE.height))
+            self.corners[1] = (min(center_int[0] + self.margin, config.engine.width), min(center_int[1] + self.margin, config.engine.height))
 
             self.center_index = 0
             return True
         else:
             #   Shape detection failed. We reset the crop area and iterate through a list of alternative center points.
-            print("B")
+
             self.center         = self.original_center[self.center_index] # This loops through a list with centers surrounding the origin.
             self.corners        = self.standard_corners.copy()
             self.walkout_offset = 0

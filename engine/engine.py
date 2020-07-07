@@ -33,8 +33,8 @@ class Engine:
         self.mean           =   -1  #    Used for infering blinking.
 
         max_cr_processor    =   3
-        self.cr_processors  =   [Shape(self, type = 2) for _ in range(max_cr_processor)]
-        self.pupil_processor=   Shape(self)
+        self.cr_processors  =   [Shape(type = 2) for _ in range(max_cr_processor)]
+        self.pupil_processor=   Shape()
 
         #   Via "gui", assign "refresh_pupil" to function "processor.refresh_source"
         #   when the pupil has been selected.
