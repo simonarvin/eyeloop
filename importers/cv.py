@@ -4,23 +4,13 @@ from importers.importer import IMPORTER
 
 class Importer(IMPORTER):
     def __init__(self, ENGINE) -> None:
+        super().__init__(ENGINE)
 
-        arguments = ENGINE.arguments
-        self.ENGINE = ENGINE
-        self.path = video = arguments.video
         pathtype = check_path_type(self.path)
 
-        self.scale = arguments.scale
-
-        if self.scale == 1:
-            self.resize = lambda x: x
-        else:
-            self.resize = self.resize_image
-
-        self.file_manager = ENGINE.file_manager
-
+        # load first frame
         if pathtype == "file": #or stream
-            self.capture        =   cv2.VideoCapture(video)
+            self.capture        =   cv2.VideoCapture(self.path)
             self.route_frame = self.route_cam
             width          =   self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
             height         =   self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -29,7 +19,6 @@ class Importer(IMPORTER):
             image=image[...,0]
 
         elif pathtype == "folder":
-
 
             self.file_manager.input_folderpath = self.path
 

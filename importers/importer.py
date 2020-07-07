@@ -3,13 +3,26 @@ import cv2
 from utilities.general_operations import tuple_int
 
 class IMPORTER:
-    def arm(self, width, height, image):
+    def __init__(self, ENGINE):
+        self.ENGINE = ENGINE
+        self.live = True
+        self.file_manager = self.ENGINE.file_manager
+        self.scale = self.ENGINE.arguments.scale
         self.frame          =   0
+        self.path = self.ENGINE.arguments.video
+
+    def arm(self, width, height, image):
+
         self.dimensions = tuple_int((width * self.scale, height * self.scale))
 
         width, height = self.dimensions
 
         self.center = (width // 2, height // 2)
+
+        if self.scale == 1:
+            self.resize = lambda x: x
+        else:
+            self.resize = self.resize_image
 
         self.resize(image)
 
