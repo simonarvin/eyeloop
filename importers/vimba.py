@@ -1,5 +1,6 @@
 import time
 from pymba import Vimba
+from pymba import Frame
 from importers.importer import IMPORTER
 
 #For pymba documentation, see:
@@ -18,7 +19,7 @@ class Importer(IMPORTER):
             frame = camera.acquire_frame()
             camera.disarm()
 
-        frame.buffer_data_numpy()
+        image = frame.buffer_data_numpy()
         height, width = frame.shape
 
         self.arm(width, height, image)
