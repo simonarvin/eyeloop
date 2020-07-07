@@ -3,8 +3,6 @@ sys.path.append('../')
 
 from engine.engine import Engine
 
-from importers.vimba import Importer
-
 from utilities.format_print import clear, welcome
 from utilities.argument_parser import Arguments
 from utilities.file_manager import File_Manager
@@ -43,6 +41,7 @@ class EyeLoop:
             print("Initiating tracking via {}".format(arguments.importer))
             import_command = "from importers.{} import Importer".format(arguments.importer)
             exec(import_command, globals())
+            global Importer
         except Exception as e:
             print("Invalid importer selected.\n", e)
 
