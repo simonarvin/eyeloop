@@ -4,26 +4,22 @@ from utilities.general_operations import tuple_int
 import config
 
 class IMPORTER:
-<<<<<<< HEAD
-    def __init__(self, ENGINE):
-        self.ENGINE = ENGINE
+
+    def __init__(self):
         self.live = True
-        self.file_manager = self.ENGINE.file_manager
-        self.scale = self.ENGINE.arguments.scale
-=======
-<<<<<<< Updated upstream
-=======
+        self.file_manager = config.engine.file_manager
+        self.scale = config.arguments.scale
+
     def __init__(self):
         self.live = True
         self.scale = config.arguments.scale
         self.frame          =   0
         self.path = config.arguments.video
 
->>>>>>> Stashed changes
+
     def arm(self, width, height, image):
->>>>>>> in-progress
         self.frame          =   0
-        self.path = self.ENGINE.arguments.video
+        self.path = config.engine.arguments.video
 
     def arm(self, width, height, image):
 

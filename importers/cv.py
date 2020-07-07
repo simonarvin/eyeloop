@@ -4,22 +4,17 @@ from importers.importer import IMPORTER
 import config
 
 class Importer(IMPORTER):
-<<<<<<< Updated upstream
-    def __init__(self, ENGINE) -> None:
-        super().__init__(ENGINE)
 
-<<<<<<< HEAD
-=======
-        arguments = ENGINE.arguments
-        self.ENGINE = ENGINE
-        self.path = video = arguments.video
-=======
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.path = config.arguments.video
+
     def __init__(self) -> None:
         super().__init__()
 
     def start(self)->None:
->>>>>>> Stashed changes
->>>>>>> in-progress
+
         pathtype = check_path_type(self.path)
 
         # load first frame
@@ -34,17 +29,13 @@ class Importer(IMPORTER):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         elif pathtype == "folder":
 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
 
->>>>>>> in-progress
             self.file_manager.input_folderpath = self.path
-=======
+
             config.file_manager.input_folderpath = self.path
 
             image = config.file_manager.read_image(self.frame)
->>>>>>> Stashed changes
+
 
             try:
                 height, width, _ = image.shape
