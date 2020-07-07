@@ -17,10 +17,8 @@ The reason for using an *importer* class, rather than having video importation "
 To build our first custom importer, we instantiate our *Importer* class:
 ```python
 class Importer(IMPORTER):
-    def __init__(self, ENGINE) -> None:
-        self.ENGINE = ENGINE
-        self.arguments = ENGINE.arguments
-        self.scale = self.arguments.scale
+    def __init__(self) -> None:
+        self.scale = config.arguments.scale
 ```
 Here, we define critical variables, such as scaling. Then, we load the first frame, retrieve its dimensions and, lastly, *arm* the engine:
 
@@ -35,7 +33,7 @@ Finally, the ```route()``` function loads the video frames and passes them to th
 def route(self) -> None:
         while True:
             image = ...
-            self.ENGINE.update_feed(image)
+            config.engine.update_feed(image)
             self.frame += 1
 ```
 Optionally, add a ```release()``` function to control termination of the importation process:
