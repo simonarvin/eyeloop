@@ -51,5 +51,4 @@ class EyeLoop:
 
 
 if __name__ == '__main__':
-
     EyeLoop()
