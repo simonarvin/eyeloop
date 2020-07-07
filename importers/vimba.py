@@ -2,14 +2,15 @@ import time
 from pymba import Vimba
 from pymba import Frame
 from importers.importer import IMPORTER
+import config
 
 #For pymba documentation, see:
 #https://github.com/morefigs/pymba
 
 class Importer(IMPORTER):
 
-    def __init__(self, ENGINE) -> None:
-        super().__init__(ENGINE)
+    def __init__(self) -> None:
+        super().__init__()
 
         # load first frame
         with Vimba() as vimba:
@@ -40,10 +41,10 @@ class Importer(IMPORTER):
 
         #image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
 
-        image = self.rotate(image, self.ENGINE.angle)
+        image = self.rotate(image, config.engine.angle)
 
         image = self.resize(image)
-        self.ENGINE.update_feed(image)
+        config.engine.update_feed(image)
         self.save(image)
 
         self.frame += 1
