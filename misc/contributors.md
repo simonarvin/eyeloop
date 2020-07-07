@@ -10,3 +10,8 @@ Contributors are welcome to join in and help improve dynamic eye-tracking tailor
 We are continously improving EyeLoop and adding new features. Artists, programmers, biologists, students, ..., are all welcome.
 
 If interested, please do not hesitate to write at: sarv@dandrite.au.dk.
+
+## Planned new features ##
+
+- [ ] Multi-eye tracking.
+- [ ] Ultra-high speed tracking.
