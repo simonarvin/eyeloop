@@ -49,7 +49,6 @@ class EyeLoop:
             print("Invalid importer selected.\n", e)
 
         config.importer  =   Importer()
-        config.importer.start()
         config.importer.route()
 
 

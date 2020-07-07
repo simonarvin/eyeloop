@@ -10,7 +10,7 @@ import config
 class Importer(IMPORTER):
 
 
-    def start(self)->None:
+    def first_frame(self)->None:
         # load first frame
         with Vimba() as vimba:
             camera = vimba.camera(0)
@@ -51,6 +51,8 @@ class Importer(IMPORTER):
         self.live = False
 
     def route(self) -> None:
+        self.first_frame()
+
         with Vimba() as vimba:
 
             camera = vimba.camera(0)

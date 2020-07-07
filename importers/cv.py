@@ -8,10 +8,10 @@ class Importer(IMPORTER):
     def __init__(self) -> None:
         super().__init__()
 
+
+
+    def first_frame(self)->None:
         self.path = config.arguments.video
-
-    def start(self)->None:
-
         pathtype = check_path_type(self.path)
 
         # load first frame
@@ -20,7 +20,7 @@ class Importer(IMPORTER):
                 self.capture        =   cv2.VideoCapture(0)
             else:
                 self.capture        =   cv2.VideoCapture(self.path)
-            
+
             self.route_frame = self.route_cam
             width          =   self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
             height         =   self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -53,6 +53,7 @@ class Importer(IMPORTER):
 
 
     def route(self) -> None:
+        self.first_frame()
         try:
             while True:
                 self.route_frame()
@@ -82,7 +83,7 @@ class Importer(IMPORTER):
     def route_cam(self) -> None:
         """
         Routes the capture frame to:
-        1: puptrack for online processing
+        1: eyeloop for online processing
         2: frame save for offline processing
         """
 
