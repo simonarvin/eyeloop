@@ -1,10 +1,11 @@
 from os import system, name
+import config
 
 tab="       "
 linebreak="\n{}{}\n".format(tab,30*"_")
-version="0.1"
-journal     ="Journal article:    [link]"
-git         ="Git:                https://github.com/simonarvin/eyeloop"
+
+journal     ="doi:                  10.1101/2020.07.03.186387"
+git         ="repo:                 https://github.com/simonarvin/eyeloop"
 
 def clear() -> None:
 
@@ -25,7 +26,7 @@ def logo(label="") -> None:
     |___  |  |___ |___ \__/ \__/ |
 
                                   v{}
-                                           """.format(label,version)
+                                           """.format(label,config.version)
     return logo
 def welcome(label="") -> None:
     clear()
@@ -38,20 +39,4 @@ def welcome(label="") -> None:
 
     {}
     {}{}""".format(logo(label),git, journal,linebreak)
-    print(msg)
-
-def help() -> None:
-    msg="""
-    Puptrack user-guide (help; manual)
-        This brief user-guide describes how to get Puptrack running,
-        step by step. In addition, it lists client commands and command
-        line arguments. It does not describe how to utilize it to its
-        full extent. For this, refer to the journal article (--journal).
-
-    Step-by-step:
-
-    Client commands:
-
-    Command line arguments:
-    """
     print(msg)
