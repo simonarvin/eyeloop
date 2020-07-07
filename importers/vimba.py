@@ -9,9 +9,8 @@ import config
 
 class Importer(IMPORTER):
 
-    def __init__(self) -> None:
-        super().__init__()
 
+    def start(self)->None:
         # load first frame
         with Vimba() as vimba:
             camera = vimba.camera(0)
@@ -24,7 +23,6 @@ class Importer(IMPORTER):
         height, width = frame.shape
 
         self.arm(width, height, image)
-
 
     def acquire_frame(self, frame: Frame, delay: int = 1) -> None:
         """

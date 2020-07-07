@@ -10,23 +10,26 @@ class Importer(IMPORTER):
 
         self.path = config.arguments.video
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def start(self)->None:
 
         pathtype = check_path_type(self.path)
 
         # load first frame
         if pathtype == "file": #or stream
-            self.capture        =   cv2.VideoCapture(self.path)
+            if self.path == "0":
+                self.capture        =   cv2.VideoCapture(0)
+            else:
+                self.capture        =   cv2.VideoCapture(self.path)
+            
             self.route_frame = self.route_cam
             width          =   self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
             height         =   self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
             _, image    =   self.capture.read()
-
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            try:
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            except:
+                image=image[...,0]
         elif pathtype == "folder":
 
 
