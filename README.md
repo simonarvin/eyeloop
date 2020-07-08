@@ -167,7 +167,7 @@ The default graphical user interface in EyeLoop is [*minimum-gui*.](https://gith
 > EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instructions on how to build your own.
 
 ## Known issues ##
-None yet.
+- [ ] Respawning/freezing windows when running *minimum-gui* in Ubuntu.
 
 ## References ##
 If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint](https://www.biorxiv.org/content/10.1101/2020.07.03.186387v1)).
