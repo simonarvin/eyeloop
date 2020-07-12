@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-    <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_1.gif?raw=true" align="center" height="150">&nbsp; <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_2.gif?raw=true" align="center" height="150">&nbsp; <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_3.gif?raw=true" align="center" height="150">
+    <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_1.gif?raw=true" align="center" height="150">&nbsp; <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_3.gif?raw=true" align="center" height="150">&nbsp; <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_4.gif?raw=true" align="center" height="150">
   </p>
 
 EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed-loop experiments on consumer-grade hardware. This software is actively maintained: Users are encouraged to contribute to its development.
