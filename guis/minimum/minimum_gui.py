@@ -216,8 +216,8 @@ class GUI:
         self.binary_width = max(width, 300)
         self.binary_height = max(height, 200)
 
-        #fourcc = cv2.VideoWriter_fourcc(*'MPEG')
-        #self.out = cv2.VideoWriter('output.avi', fourcc, 50.0, (self.width,self.height))
+        fourcc = cv2.VideoWriter_fourcc(*'MPEG')
+        self.out = cv2.VideoWriter('output.avi', fourcc, 50.0, (self.width,self.height))
 
         self.PStock = np.zeros((self.binary_height, self.binary_width))
         self.CRStock = self.PStock.copy()
@@ -280,49 +280,50 @@ class GUI:
         if cv2.waitKey(1) == ord('q'):
             config.engine.release()
 
-    def update_track(self) -> None:
+    def update_track(self, blink:int) -> None:
         frame_preview = cv2.cvtColor(config.engine.source, cv2.COLOR_GRAY2BGR)
         frame_source = frame_preview.copy()
-        Processor = self.pupil_processor
-
         cr_width = pupil_width = -1
+        Processor = self.pupil_processor
+        if blink == 0:
 
-        self.rplace_markers(frame_preview)
-        for index, cr_processor in enumerate(config.engine.cr_processors):
-            if cr_processor.active:
+            self.rplace_markers(frame_preview)
+            for index, cr_processor in enumerate(config.engine.cr_processors):
+                if cr_processor.active:
 
-                cr_corners = cr_processor.corners
-                cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
+                    cr_corners = cr_processor.corners
+                    cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
 
-                if self._state == "adjustment":
-                    if cr_processor == self.current_cr_processor:
-                        color = bluish
+                    if self._state == "adjustment":
+                        if cr_processor == self.current_cr_processor:
+                            color = bluish
+                        else:
+                            color = green
+                        try:
+
+                            cv2.ellipse(frame_preview, tuple_int(cr_center), cr_dimensions_int, cr_angle, 0, 360, color, 1)
+                            self.place_cross(frame_preview, cr_center, color)
+                            cv2.rectangle(frame_preview, cr_corners[0], cr_corners[1],  color)
+
+                            cv2.putText(frame_preview, "{}".format(index + 2), (int((cr_corners[1][0]+cr_corners[0][0])*.5-3), cr_corners[0][1]-3), font, .7, color, 0, cv2.LINE_4)
+                        except Exception as e:
+                            cr_processor.active = False
+
                     else:
-                        color = green
-                    try:
-
-                        cv2.ellipse(frame_preview, tuple_int(cr_center), cr_dimensions_int, cr_angle, 0, 360, color, 1)
-                        self.place_cross(frame_preview, cr_center, color)
-                        cv2.rectangle(frame_preview, cr_corners[0], cr_corners[1],  color)
-
-                        cv2.putText(frame_preview, "{}".format(index + 2), (int((cr_corners[1][0]+cr_corners[0][0])*.5-3), cr_corners[0][1]-3), font, .7, color, 0, cv2.LINE_4)
-                    except Exception as e:
-                        cr_processor.active = False
-
-                else:
-                    self.place_cross(frame_preview, cr_center, black)
+                        self.place_cross(frame_preview, cr_center, bluish)
 
 
-        try:
+            try:
 
-            pupil_corners = Processor.corners
-            pupil_center, pupil_width, pupil_height, pupil_angle, pupil_dimensions_int = Processor.ellipse.parameters()
+                pupil_corners = Processor.corners
+                pupil_center, pupil_width, pupil_height, pupil_angle, pupil_dimensions_int = Processor.ellipse.parameters()
 
-            cv2.ellipse(frame_preview, tuple_int(pupil_center), pupil_dimensions_int, pupil_angle, 0, 360, red, 1)
-            self.place_cross(frame_preview, pupil_center, red)
-            cv2.rectangle(frame_preview, pupil_corners[0], pupil_corners[1], red)
-        except:
-            pass
+                cv2.ellipse(frame_preview, tuple_int(pupil_center), pupil_dimensions_int, pupil_angle, 0, 360, red, 1)
+                self.place_cross(frame_preview, pupil_center, red)
+                cv2.rectangle(frame_preview, pupil_corners[0], pupil_corners[1], red)
+            except:
+                pass
+
 
 
         if self._state == "adjustment":
@@ -372,7 +373,7 @@ class GUI:
             cv2.imshow("CONFIGURATION", np.hstack((frame_source, frame_preview)))
             cv2.imshow("BINARY", np.vstack((stock_P, stock_CR)))
 
-            #self.out.write(frame_preview)
+            self.out.write(frame_preview)
 
             self.key = cv2.waitKey(50)
 
@@ -383,7 +384,7 @@ class GUI:
 
         else:
             #real tracking
-            #self.out.write(frame_preview)
+            self.out.write(frame_preview)
 
             cv2.imshow("TRACKING",  frame_preview)
 

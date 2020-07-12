@@ -14,6 +14,8 @@ class Circle:
 
         try:
             x_coord, y_coord, radius, v = self.hyper_fit(x,y)
+            if radius < 4:
+                return False
 
             self.center = [self.shape_processor.corners[0][0] + x_coord, self.shape_processor.corners[0][1] + y_coord]
             self.width = self.height = radius
@@ -78,8 +80,11 @@ class Circle:
         #finding the root of the characteristic polynomial
 
         det = Cov_xy
-        Xcenter = (Mxz*(Myy) - Myz*Mxy)/det/2.
-        Ycenter = (Myz*(Mxx) - Mxz*Mxy)/det/2.
+        if det != 0:
+            Xcenter = (Mxz*(Myy) - Myz*Mxy)/det/2.
+            Ycenter = (Myz*(Mxx) - Mxz*Mxy)/det/2.
+        else:
+            return 0, 0, 0, 0
 
         x = Xcenter + mean_X
         y = Ycenter + mean_Y

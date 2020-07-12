@@ -48,6 +48,13 @@ class Shape():
     def refresh_source(self, source):
 
         try:
+            try:
+                self.source=source
+
+                ok = self.tracker.init(self.source, self.bbox)
+            except:
+                pass
+
             self.cropsource         =   source[self.corners[0][1]:self.corners[1][1],
             self.corners[0][0]:self.corners[1][0]]
 
@@ -63,7 +70,8 @@ class Shape():
                 self.area       =   cv2.GaussianBlur(self.area, (self.blur, self.blur), 0)
             self.thresh()
 
-        except:# Exception as e:
+        except Exception as e:
+            print("Kkk",e)
             pass
 
     def reset(self, center, col):
@@ -79,9 +87,50 @@ class Shape():
         self.standard_corners   =   [(0, 0), (config.engine.width, config.engine.height)]
         self.corners        =   self.standard_corners.copy()
 
-    def track(self):
+        self.tracker = cv2.TrackerMedianFlow_create()
+
+    def track(self, last:bool = False):
 
         try:
+
+            if config.engine.blink_i == 1:
+                self.corners        = self.standard_corners.copy()
+                self.walkout_offset = 0
+                self.refresh_source(self.source)
+                contours, hierarchy = cv2.findContours(self.area, 1, 2)
+                if len(contours) > 0:
+                    dists=np.zeros(len(contours))
+                    for i, cnt in enumerate(contours):
+
+                        M = cv2.moments(cnt)
+                        try:
+                            cx = int(M['m10']/M['m00'])
+                            cy = int(M['m01']/M['m00'])
+                            if self.type == 1:
+                                dists[i]=np.mean(self.source[cy-2:cy+2,cx-2:cx+2])
+                            else:
+
+                                dists[i] = np.sqrt((cx-self.center[0])**2+(cy-self.center[1])**2)
+
+                        except:
+                            dists[i]=255
+
+                    from operator import itemgetter
+                    #todo: score these based on 1) color and 2) distance to center
+                    M = cv2.moments(contours[min(enumerate(dists), key=itemgetter(1))[0] ])
+                    try:
+                        cx = round(M['m10']/M['m00'])
+                        cy = round(M['m01']/M['m00'])
+                    except:
+
+                        return False
+                    #print(cx,cy)
+                    self.center=(cx, cy)
+
+                    #self.source[cy,cx]=250
+                    #cv2.imshow("JJ", self.source)
+                    #cv2.waitKey(0)
+
             center = [self.center[0] - self.corners[0][0], self.center[1] - self.corners[0][1]]
             walkout = self.walkout
             walkout.reset(center)
@@ -98,46 +147,96 @@ class Shape():
                 ellipse = 0
 
         except Exception as e:
+            print(e)
             return False
 
         if ellipse == fit_product:
 
             center, width, height   =   ellipse.center, ellipse.width, ellipse.height
+            if width * height > 4:
 
-            # if self.type == 2:
-            #     if distance(np.array(center), np.array(self.center)) > 6: #normalize qqqq
-            #         self.center = self.original_center[self.center_index]
-            #         self.corners        =   self.standard_corners.copy()
-            #         return False
+                # if self.type == 2:
+                #     if distance(np.array(center), np.array(self.center)) > 6: #normalize qqqq
+                #         self.center = self.original_center[self.center_index]
+                #         self.corners        =   self.standard_corners.copy()
+                #         return False
 
-            self.ellipse = ellipse
-            self.center = center
+                self.ellipse = ellipse
+                self.center = center
 
-            #"walkout_offset" defines the walkout offset for the next frame.
-            #The multiplication factor, here .4, returns slightly below the average.
-            self.walkout_offset    =   int(.4*(width + height))
+                #"walkout_offset" defines the walkout offset for the next frame.
+                #The multiplication factor, here .4, returns slightly below the average.
+                self.walkout_offset    =   int(.4*(width + height))
 
-            self.margin = np.amax(ellipse.dimensions_int) * 3
-            center_int = tuple_int(center)
+                self.margin = np.amax(ellipse.dimensions_int) * 2
+                center_int = tuple_int(center)
 
-            self.corners[0] = (max(center_int[0] - self.margin, 0), max(center_int[1] - self.margin, 0))
-            self.corners[1] = (min(center_int[0] + self.margin, config.engine.width), min(center_int[1] + self.margin, config.engine.height))
+                self.corners[0] = (max(center_int[0] - self.margin, 0), max(center_int[1] - self.margin, 0))
+                self.corners[1] = (min(center_int[0] + self.margin, config.engine.width), min(center_int[1] + self.margin, config.engine.height))
 
-            self.center_index = 0
-            return True
-        else:
-            #   Shape detection failed. We reset the crop area and iterate through a list of alternative center points.
-
-            self.center         = self.original_center[self.center_index] # This loops through a list with centers surrounding the origin.
-            self.corners        = self.standard_corners.copy()
-            self.walkout_offset = 0
-
-            if self.center_index < 8:
-                self.center_index += 1
-                self.track()
-            else:
                 self.center_index = 0
+
+                margin = to_int(np.amax(ellipse.dimensions_int) *1)
+
+                #self.bbox = (max(center_int[0] - margin, 0),  max(center_int[1] - margin, 0), margin * 2, margin * 2)
+
+                # try:
+                #     if self.bbox:
+                #         (success, box) = self.tracker.update(self.source)
+                #         if success:
+                #             box=np.array(box, dtype=int)
+                #             x,y,w,h = box
+                #
+                #             cv2.rectangle(self.source,(x,y),(x+w,y+h),(0,255,0),1)
+                #             #cv2.rectangle(self.source, box, (0,255,0),1)
+                #             cv2.imshow("Kk", self.source)
+                #         #cv2.waitKey(0)
+                #         #print(box)
+                # except Exception as e:
+                #     print(e)
+                #     pass
+
+
+                return True
+
+        if last:
+            return False
+        #   Shape detection failed, try contour detection
+        self.corners        = self.standard_corners.copy()
+        self.walkout_offset = 0
+        self.refresh_source(self.source)
+        contours, hierarchy = cv2.findContours(self.area, 1, 2)
+        if len(contours) > 0:
+            dists=np.zeros(len(contours))
+            for i, cnt in enumerate(contours):
+
+                M = cv2.moments(cnt)
+                try:
+                    cx = int(M['m10']/M['m00'])
+                    cy = int(M['m01']/M['m00'])
+                    if self.type == 1:
+                        dists[i]=np.mean(self.source[cy-2:cy+2,cx-2:cx+2])
+                    else:
+
+                        dists[i] = np.sqrt((cx-self.center[0])**2+(cy-self.center[1])**2)
+
+                except:
+                    dists[i]=255
+
+            from operator import itemgetter
+            #todo: score these based on 1) color and 2) distance to center
+            M = cv2.moments(contours[min(enumerate(dists), key=itemgetter(1))[0] ])
+            try:
+                cx = round(M['m10']/M['m00'])
+                cy = round(M['m01']/M['m00'])
+            except:
+
                 return False
+            #print(cx,cy)
+            self.center=(cx, cy)
+            return self.track(True)
+
+        return False
 
 stdthres = 1
 center_stdthres = .95
@@ -211,7 +310,7 @@ class Contour:
         step_list      =   step_list_source.copy()
 
         offset         =   self.processor.walkout_offset
-
+        b=0
         for i, cos_sin in enumerate(cos_sin_steps):
 
             cos, sin = cos_sin
@@ -222,7 +321,7 @@ class Contour:
             insidemark = False
 
             for _ in limit:
-
+                b+=1
                 #If walkout coordinate hits out-of-contour area, break out of the loop.
                 try:
                     pixel = self.processor.area[to_int(y[i]), to_int(x[i])]
@@ -253,6 +352,9 @@ class Contour:
                 step_list[i] += 1
 
         coord_length = len(x)
+
+        if b <= len(x)+2:
+            return False
 
         if coord_length < 5:
             return False

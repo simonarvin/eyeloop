@@ -7,11 +7,6 @@ class IMPORTER:
 
     def __init__(self):
         self.live = True
-        self.file_manager = config.engine.file_manager
-        self.scale = config.arguments.scale
-
-    def __init__(self):
-        self.live = True
         self.scale = config.arguments.scale
         self.frame          =   0
         self.path = config.arguments.video

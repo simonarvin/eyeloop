@@ -6,6 +6,7 @@ import config
 from engine.processor import Shape
 from constants.engine_constants import *
 from utilities.general_operations import to_int, tuple_int
+import matplotlib.pyplot as plt
 
 class Engine:
     def __init__(self, eyeloop):
@@ -98,7 +99,14 @@ class Engine:
 
     def arm(self, width, height, image) -> None:
         self.norm = (width + height) * .003
-        self.norm_cr_artefact = int(3 * self.norm)
+        self.norm_cr_artefact = int(6 * self.norm)
+        self.blink_mean=0
+        self.mean=np.mean(image)
+        self.base_mean = -1
+        self.blink = 0
+        self.means=[]
+        self.means_x=[]
+        self.blink_i = 0
 
         self.width, self.height = width, height
         config.graphical_user_interface.arm(width, height)
@@ -116,11 +124,21 @@ class Engine:
         """
 
         mean            = np.mean(self.source)
-        delta           = int(mean - self.mean)
-        self.mean       = mean
+        delta = self.mean - mean
+        self.mean=mean
+        self.means.append(mean)
+        self.means_x.append(len(self.means_x))
+    #    print("delta", delta)
+        if abs(delta) > 1.3:
+            self.blink = 10
+            print("blink!")
+            return False
+        elif self.blink != 0:
 
-        if delta > 3: # normalize to frame rate qqqq
-            return False #BLINK
+            self.blink -= 1
+            return False
+        self.blink=0
+
 
         return True
 
@@ -160,12 +178,14 @@ class Engine:
             if self.pupil_processor.track():
                 self.pupil = self.pupil_processor.center
                 pupil_center, pupil_width, pupil_height, pupil_angle, pupil_dimensions_int = self.pupil_processor.ellipse.parameters()
+                self.base_mean = np.mean(self.source)
 
         else:
             blink = 1
+        self.blink_i = blink
 
         try:
-            config.graphical_user_interface.update_track()
+            config.graphical_user_interface.update_track(blink)
         except Exception as e:
             print("Error! Did you assign the graphical user interface (GUI) correctly?")
             print("Error message: ", e)
@@ -206,6 +226,8 @@ class Engine:
         """
 
         self.live = False
+        plt.plot(self.means_x[1:], np.diff(self.means))
+        plt.show()
 
         try:
             config.importer.release()
@@ -251,9 +273,9 @@ class Engine:
             x = cr_center_int[0] + offsetx + cos
             y = cr_center_int[1] + offsety + sin
             n=1
-            strike = 0
 
-            while n < self.norm_cr_artefact: #normalize qqqq
+
+            while n < self.norm_cr_artefact:
                 n+=1
                 try:
                     if pupil_area[y, x] != 0:

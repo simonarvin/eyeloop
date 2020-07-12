@@ -40,4 +40,4 @@ class File_Manager:
         Command-line argument -v [dir] sets this path.
         """
 
-        return np.array(cv2.imread("{}/frame_{}.jpg".format(self.input_folderpath, frame)))
+        return np.array(cv2.imread("{}/pic{}.jpg".format(self.input_folderpath, frame)))

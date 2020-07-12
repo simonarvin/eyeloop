@@ -33,7 +33,7 @@ class Importer(IMPORTER):
         elif pathtype == "folder":
 
 
-            self.file_manager.input_folderpath = self.path
+            config.file_manager.input_folderpath = self.path
 
             config.file_manager.input_folderpath = self.path
 
@@ -72,7 +72,6 @@ class Importer(IMPORTER):
 
         image = config.file_manager.read_image(self.frame)[...,0]
         self.proceed(image)
-
 
     def route_sequence_flat(self) -> None:
 
