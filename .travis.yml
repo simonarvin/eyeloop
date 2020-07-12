@@ -4,7 +4,7 @@ python:
 
 install:
   - pip install numpy
-  - pip install opencv-python
+  - pip install opencv-contrib-python
 dist: xenial
 services:
   - xvfb
