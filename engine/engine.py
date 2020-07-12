@@ -6,7 +6,6 @@ import config
 from engine.processor import Shape
 from constants.engine_constants import *
 from utilities.general_operations import to_int, tuple_int
-import matplotlib.pyplot as plt
 
 class Engine:
     def __init__(self, eyeloop):
@@ -100,12 +99,11 @@ class Engine:
     def arm(self, width, height, image) -> None:
         self.norm = (width + height) * .003
         self.norm_cr_artefact = int(6 * self.norm)
-        self.blink_mean=0
+
         self.mean=np.mean(image)
         self.base_mean = -1
         self.blink = 0
-        self.means=[]
-        self.means_x=[]
+
         self.blink_i = 0
 
         self.width, self.height = width, height
@@ -126,10 +124,9 @@ class Engine:
         mean            = np.mean(self.source)
         delta = self.mean - mean
         self.mean=mean
-        self.means.append(mean)
-        self.means_x.append(len(self.means_x))
+
     #    print("delta", delta)
-        if abs(delta) > 1.3:
+        if abs(delta) > 1.1:
             self.blink = 10
             print("blink!")
             return False
@@ -178,7 +175,7 @@ class Engine:
             if self.pupil_processor.track():
                 self.pupil = self.pupil_processor.center
                 pupil_center, pupil_width, pupil_height, pupil_angle, pupil_dimensions_int = self.pupil_processor.ellipse.parameters()
-                self.base_mean = np.mean(self.source)
+
 
         else:
             blink = 1
@@ -226,9 +223,7 @@ class Engine:
         """
 
         self.live = False
-        plt.plot(self.means_x[1:], np.diff(self.means))
-        plt.show()
-
+        
         try:
             config.importer.release()
         except:
