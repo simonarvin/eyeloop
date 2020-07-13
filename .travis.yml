@@ -9,4 +9,4 @@ dist: xenial
 services:
   - xvfb
 
-script: python eyeloop/run_eyeloop.py --video 'examples/optokinetic-reflex/Wild-type.avi'
+script: python eyeloop/run_eyeloop.py --video 'https://github.com/simonarvin/eyeloop_playground/blob/master/examples/optokinetic-reflex/Wild-type.avi'
