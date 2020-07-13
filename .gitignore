@@ -100,3 +100,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+# eyeloop generated files
+data/
+*.avi
