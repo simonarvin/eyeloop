@@ -52,7 +52,7 @@ class Shape():
             try:
                 self.source = source
 
-                ok = self.tracker.init(self.source, self.bbox)
+                #ok = self.tracker.init(self.source, self.bbox)
             except:
                 pass
 
@@ -88,7 +88,7 @@ class Shape():
         self.standard_corners = [(0, 0), (config.engine.width, config.engine.height)]
         self.corners = self.standard_corners.copy()
 
-        self.tracker = cv2.TrackerMedianFlow_create()
+        #self.tracker = cv2.TrackerMedianFlow_create()
 
     def track(self, last: bool = False):
 
