@@ -220,7 +220,8 @@ class GUI:
         self.binary_height = max(height, 200)
 
         fourcc = cv2.VideoWriter_fourcc(*'MPEG')
-        self.out = cv2.VideoWriter('output.avi', fourcc, 50.0, (self.width, self.height))
+        output_vid = config.arguments.output_dir / "output.avi"
+        self.out = cv2.VideoWriter(str(output_vid), fourcc, 50.0, (self.width, self.height))
 
         self.PStock = np.zeros((self.binary_height, self.binary_width))
         self.CRStock = self.PStock.copy()
