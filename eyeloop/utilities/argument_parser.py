@@ -36,8 +36,8 @@ class Arguments:
             self.parse_config(self.config)
 
         self.markers = args.markers
-        self.video = Path(args.video).absolute()
-        self.output_dir = Path(args.output_dir).absolute()
+        self.video = Path(args.video.strip("\'\"")).absolute()  # Handle quotes used in argument
+        self.output_dir = Path(args.output_dir.strip("\'\"")).absolute()
         self.importer = args.importer.lower()
         self.scale = args.scale
         self.tracking = args.tracking
