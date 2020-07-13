@@ -10,7 +10,7 @@
 
 ## How the *Engine* handles *Extractors* ##
 
-*Extractors* are utilized by EyeLoop's *Engine* via the *Extractor array*. Users must first *load* all extractors into the *Engine* via *eyeloop.py*:
+*Extractors* are utilized by EyeLoop's *Engine* via the *Extractor array*. Users must first *load* all extractors into the *Engine* via *run_eyeloop.py*:
 ```python
 class EyeLoop:
     def __init__(self) -> None:
@@ -74,7 +74,7 @@ An experiment *Extractor* might activate the experiment when the trial is initia
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/extractor_scheme.svg?raw=true" align="center" width = "350">
   </p>
 
-The ```fetch()``` function is called at the end of every time-step. It receives the *Engine* pointer, gaining access to all eye-tracking data in real-time. 
+The ```fetch()``` function is called at the end of every time-step. It receives the *Engine* pointer, gaining access to all eye-tracking data in real-time.
 ```python
     ...
         def fetch(self, Engine):

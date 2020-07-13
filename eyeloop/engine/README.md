@@ -5,7 +5,7 @@
 
 The engine processes each frame of the video sequentially. First, the user selects the corneal reflections, then the pupil. The frame is binarized, filtered, and smoothed by a gaussian kernel. Then, the engine utilizes a walk-out algorithm to detect contours. This produces a matrix of points, which is filtered to discard bad matches. Using the corneal reflections, any overlap between the corneal reflections and the pupil is removed. Finally, the shape is parameterized by a fitting model: either an ellipsoid (suitable for rodents, cats, etc.), or a circle model (human, non-human primates, rodents, etc.). The target species is easily changed:
 ```
-python eyeloop.py --model circular/ellipsoid
+python eyeloop/run_eyeloop.py --model circular/ellipsoid
 ```
 Lastly, the data is formatted in JSON and passed to all modules, such as for rendering, or data acquisition and experiments.
 

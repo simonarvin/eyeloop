@@ -15,7 +15,7 @@ EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed
 
 ## Features ##
 - [x] **High-speed** on non-specialized hardware (no dedicated processing units necessary).
-- [x] Modular, readable, **customizable**. 
+- [x] Modular, readable, **customizable**.
 - [x] **Open-source**, and entirely Python 3.
 - [x] **Works on any platform**, easy installation.
 - [x] **Actively maintained**.
@@ -66,17 +66,17 @@ git clone https://github.com/simonarvin/eyeloop.git
 
 EyeLoop is initiated through the command-line interface.
 ```
-python eyeloop.py
+python eyeloop/run_eyeloop.py
 ```
 To access the video sequence, EyeLoop must be connected to an appropriate *importer class* module. Usually, the default opencv importer class (*cv*) is sufficient. For some machine vision cameras, however, a vimba-based importer (*vimba*) is neccessary.
 ```
-python eyeloop.py --importer cv/vimba
+python eyeloop/run_eyeloop.py --importer cv/vimba
 ```
 > [Click here](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) for more information on *importers*.
 
 To perform offline eye-tracking, we pass the video argument ```--video``` with the path of the video sequence:
 ```
-python eyeloop.py --video [file]/[folder]
+python eyeloop/run_eyeloop.py --video [file]/[folder]
 ```
 <p align="right">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/models.svg?raw=true" align="right" height="150">
@@ -85,14 +85,14 @@ python eyeloop.py --video [file]/[folder]
 EyeLoop can be used on a multitude of eye types, including rodents, human and non-human primates. Specifically, users can suit their eye-tracking session to any species using the ```--model``` argument.
 
 ```
-python eyeloop.py --model ellipsoid/circular
+python eyeloop/run_eyeloop.py --model ellipsoid/circular
 ```
 > In general, the ellipsoid pupil model is best suited for rodents, whereas the circular model is best suited for primates.
 
 To see all command-line arguments, pass:
 
 ```
-python eyeloop.py --help
+python eyeloop/run_eyeloop.py --help
 ```
 
 ## Designing your first experiment ##
@@ -101,7 +101,7 @@ python eyeloop.py --help
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/setup.svg?raw=true" align="center" height="250">
 </p>
 
-In EyeLoop, experiments are built by stacking modules. For your first experiment, we'll need a data acquisition class to log the data, and an experiment class to produce a stimulus. Both classes are passed to eyeloop.py as an *extractor array*:
+In EyeLoop, experiments are built by stacking modules. For your first experiment, we'll need a data acquisition class to log the data, and an experiment class to produce a stimulus. Both classes are passed to run_eyeloop.py as an *extractor array*:
 
 ```python
 extractors = [Experiment(), DAQ()]
@@ -149,7 +149,7 @@ class Experiment:
 By using ```fetch()```, we shift the phase of the sine function at every time-step, and use this to control the brightness of a cv-render.
 ```python
     ...
-    def fetch(self, engine) -> None: 
+    def fetch(self, engine) -> None:
         self.phase += self.frequency
         sine = numpy.sin(self.phase) * .5 + .5
         brightness = numpy.ones((height, width), dtype=float) * sine
@@ -158,7 +158,7 @@ By using ```fetch()```, we shift the phase of the sine function at every time-st
 
 That's it! Test your experiment using:
 ```
-python eyeloop.py
+python eyeloop/run_eyeloop.py
 ```
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
 
@@ -187,10 +187,10 @@ If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint]
 ```
 
 ## License ##
-This project is licensed under the GNU General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied. 
+This project is licensed under the GNU General Public License v3.0. Note that the software is provided "as is", without warranty of any kind, express or implied.
 
 ## Authors ##
-    
+
 **Lead Developer:**
 Simon Arvin, sarv@dandrite.au.dk
 <p align="right">
@@ -198,7 +198,7 @@ Simon Arvin, sarv@dandrite.au.dk
     </p>
 
 **Researchers:**
-    
+
 - Simon Arvin, sarv@dandrite.au.dk
 - Rune Rasmussen, runerasmussen@biomed.au.dk
 - Keisuke Yonehara, keisuke.yonehara@dandrite.au.dk

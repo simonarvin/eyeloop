@@ -2,7 +2,7 @@
 <p align="right">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/importer_overview.svg?raw=true" align="right" height="250">
     </p>
-    
+
 To use a video sequence for eye-tracking, we use an *importer* class as a bridge to EyeLoop's engine. The importer fetches the video sequence from the camera, or offline from a directory, and imports it. Briefly, the importer main class ```IMPORTER``` includes functions to rotate, resize and save the video stream. Additionally, it *arms* the engine by passing neccesary variables.
 
 ## Why use an importer? ##
@@ -42,5 +42,5 @@ def release(self) -> None:
         terminate()
 ```
 
-That's it! 
+That's it!
 > Consider checking out [*cv Importer*](https://github.com/simonarvin/eyeloop/blob/master/importers/cv.py) as a code example.
