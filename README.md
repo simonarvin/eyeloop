@@ -57,8 +57,18 @@ git clone https://github.com/simonarvin/eyeloop.git
 ```
 
 >Dependencies:
+> ```python pip install -r requirements.txt```
+
+Alternatively:
+
 >- numpy: ```python pip install numpy```
 >- opencv: ```python pip install opencv-python```
+
+To download full examples with footage, check out EyeLoop's playground repository:
+
+```
+git clone https://github.com/simonarvin/eyeloop_playground.git
+```
 
 ---
 
