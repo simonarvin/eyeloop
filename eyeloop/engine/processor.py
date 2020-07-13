@@ -137,6 +137,10 @@ class Shape():
             if self.center == -1:
                 return False
 
+            # center has not been initialized yet
+            if self.center == -1:
+                return False
+
             center = [self.center[0] - self.corners[0][0], self.center[1] - self.corners[0][1]]
             walkout = self.walkout
             walkout.reset(center)
@@ -153,7 +157,8 @@ class Shape():
                 ellipse = 0
 
         except Exception as e:
-            print(e)
+            import traceback
+            traceback.print_exc()
             return False
 
         if ellipse == fit_product:
