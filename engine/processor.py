@@ -93,7 +93,9 @@ class Shape():
 
         try:
 
-            if config.engine.blink_i == 1:
+            # FIXME: while the hasattr is fixing the exception, it is not the
+            #        most elegant solution (nor probably the right one)
+            if config.engine.blink_i == 1 and hasattr(self, 'standard_corners'):
                 self.corners        = self.standard_corners.copy()
                 self.walkout_offset = 0
                 self.refresh_source(self.source)
@@ -151,7 +153,8 @@ class Shape():
                 ellipse = 0
 
         except Exception as e:
-            print(e)
+            import traceback
+            traceback.print_exc()
             return False
 
         if ellipse == fit_product:
