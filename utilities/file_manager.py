@@ -1,9 +1,9 @@
-import os
-import time
 
+import time
 import cv2
 import numpy as np
 
+from pathlib import Path
 
 class File_Manager:
     """
@@ -16,18 +16,17 @@ class File_Manager:
 
     def __init__(self, dir: str) -> None:
 
-        self.directory = dir + "/data"
-        self.input_folderpath = ""
+        self.directory = Path(f"{dir}/data")
 
         try:
-            os.mkdir(self.directory)
+            self.directory.mkdir()
         except FileExistsError:
             print("'{}' already exists.".format(self.directory))
 
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        self.new_folderpath = "{}/trial_{}".format(self.directory, timestamp)
+        self.new_folderpath = Path(self.directory / f"trial_{timestamp}")
 
-        os.mkdir(self.new_folderpath)
+        self.new_folderpath.mkdir()
 
     def save_image(self, image: np.ndarray, frame: int) -> None:
         """
