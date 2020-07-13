@@ -8,5 +8,5 @@ install:
 dist: xenial
 services:
   - xvfb
-  
-script: python eyeloop.py --video 'examples/optokinetic-reflex/Wild-type.avi'
+
+script: python eyeloop/run_eyeloop.py --video 'examples/optokinetic-reflex/Wild-type.avi'
