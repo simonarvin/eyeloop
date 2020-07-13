@@ -131,6 +131,10 @@ class Shape():
                     #cv2.imshow("JJ", self.source)
                     #cv2.waitKey(0)
 
+            # center has not been initialized yet
+            if self.center == -1:
+                return False
+
             center = [self.center[0] - self.corners[0][0], self.center[1] - self.corners[0][1]]
             walkout = self.walkout
             walkout.reset(center)
