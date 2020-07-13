@@ -1,8 +1,9 @@
+from pathlib import Path
+
 import cv2
 
 import config
 from importers.importer import IMPORTER
-from utilities.general_operations import check_path_type
 
 
 class Importer(IMPORTER):
@@ -11,15 +12,13 @@ class Importer(IMPORTER):
         super().__init__()
 
     def first_frame(self) -> None:
-        self.path = config.arguments.video
-        pathtype = check_path_type(self.path)
-
+        self.vid_path = Path(config.arguments.video)
         # load first frame
-        if pathtype == "file":  # or stream
-            if self.path == "0":
+        if self.vid_path.is_file() is True:  # or stream
+            if self.vid_path == "0":
                 self.capture = cv2.VideoCapture(0)
             else:
-                self.capture = cv2.VideoCapture(self.path)
+                self.capture = cv2.VideoCapture(str(self.vid_path))
 
             self.route_frame = self.route_cam
             width = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -30,11 +29,11 @@ class Importer(IMPORTER):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             except:
                 image = image[..., 0]
-        elif pathtype == "folder":
+        elif self.vid_path.is_dir() is True:
 
-            config.file_manager.input_folderpath = self.path
+            config.file_manager.input_folderpath = self.vid_path
 
-            config.file_manager.input_folderpath = self.path
+            config.file_manager.input_folderpath = self.vid_path
 
             image = config.file_manager.read_image(self.frame)
 
@@ -42,9 +41,12 @@ class Importer(IMPORTER):
                 height, width, _ = image.shape
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 self.route_frame = self.route_sequence_sing
-            except:
+            except:  # TODO fix bare except
                 height, width = image.shape
                 self.route_frame = self.route_sequence_flat
+
+        else:
+            raise ValueError(f"Video path at {self.vid_path} is not a file or directory!")
 
         self.arm(width, height, image)
 

@@ -1,5 +1,8 @@
 import argparse
-import os
+from pathlib import Path
+
+EYELOOP_DIR = Path(__file__).parent.parent
+PROJECT_DIR = EYELOOP_DIR.parent
 
 
 class Arguments:
@@ -13,7 +16,7 @@ class Arguments:
         parser.add_argument("-v", "--video", default="0", type=str,
                             help="Input a video sequence for offline processing.")
 
-        parser.add_argument("-d", "--destination", default=os.path.dirname(os.path.realpath(__file__))[:-9], type=str,
+        parser.add_argument("-o", "--output_dir", default=str(PROJECT_DIR.joinpath("data").absolute()), type=str,
                             help="Specify output destination.")
         parser.add_argument("-c", "--config", default="0", type=str, help="Input a .pupt config file (preset).")
         parser.add_argument("-i", "--importer", default="cv", type=str,
@@ -34,8 +37,8 @@ class Arguments:
             self.parse_config(self.config)
 
         self.markers = args.markers
-        self.video = args.video
-        self.destination = args.destination
+        self.video = Path(args.video.strip("\'\"")).absolute()  # Handle quotes used in argument
+        self.output_dir = Path(args.output_dir.strip("\'\"")).absolute()
         self.importer = args.importer.lower()
         self.scale = args.scale
         self.tracking = args.tracking
@@ -61,7 +64,7 @@ class Arguments:
                     self.video = parameter
                 elif parameter == "dest":
                     print("Destination preset: ", parameter)
-                    self.destination = parameter
+                    self.output_dir = Path(parameter).absolute()
 
                 elif parameter == "import":
                     print("Importer preset: ", parameter)

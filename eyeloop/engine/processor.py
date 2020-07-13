@@ -93,10 +93,11 @@ class Shape():
     def track(self, last: bool = False):
 
         try:
+
             # FIXME: while the hasattr is fixing the exception, it is not the
             #        most elegant solution (nor probably the right one)
             if config.engine.blink_i == 1 and hasattr(self, 'standard_corners'):
-                self.corners        = self.standard_corners.copy()
+                self.corners = self.standard_corners.copy()
                 self.walkout_offset = 0
                 self.refresh_source(self.source)
                 contours, hierarchy = cv2.findContours(self.area, 1, 2)
@@ -132,6 +133,9 @@ class Shape():
                     # self.source[cy,cx]=250
                     # cv2.imshow("JJ", self.source)
                     # cv2.waitKey(0)
+            # center has not been initialized yet
+            if self.center == -1:
+                return False
 
             # center has not been initialized yet
             if self.center == -1:
