@@ -1,19 +1,20 @@
-import numpy as np
 import cv2
-from utilities.general_operations import tuple_int
+import numpy as np
+
 import config
+from utilities.general_operations import tuple_int
+
 
 class IMPORTER:
 
     def __init__(self):
         self.live = True
         self.scale = config.arguments.scale
-        self.frame          =   0
+        self.frame = 0
         self.path = config.arguments.video
 
-
     def arm(self, width, height, image):
-        self.frame          =   0
+        self.frame = 0
         self.path = config.engine.arguments.video
 
     def arm(self, width, height, image):
@@ -31,10 +32,10 @@ class IMPORTER:
 
         self.resize(image)
 
-        #image = self.rotate(image, self.ENGINE.angle)
+        # image = self.rotate(image, self.ENGINE.angle)
         config.engine.arm(width, height, image)
 
-    def rotate(self, image:np.ndarray, angle:int) -> np.ndarray:
+    def rotate(self, image: np.ndarray, angle: int) -> np.ndarray:
         """
         Performs rotaiton of the image to align visual axes.
         """
@@ -46,12 +47,12 @@ class IMPORTER:
 
         return cv2.warpAffine(image, M, self.dimensions)
 
-    def resize_image(self, image:np.ndarray) -> np.ndarray:
+    def resize_image(self, image: np.ndarray) -> np.ndarray:
         """
         Resizes image to scale value. -sc 1 (default)
         """
 
-        return cv2.resize(image, None, fx = self.scale, fy = self.scale, interpolation = cv2.INTER_NEAREST)
+        return cv2.resize(image, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_NEAREST)
 
-    def save(self, image:np.ndarray) -> None:
+    def save(self, image: np.ndarray) -> None:
         config.file_manager.save_image(image, self.frame)

@@ -1,14 +1,15 @@
 from os import system, name
+
 import config
 
-tab="       "
-linebreak="\n{}{}\n".format(tab,30*"_")
+tab = "       "
+linebreak = "\n{}{}\n".format(tab, 30 * "_")
 
-journal     ="doi:                  10.1101/2020.07.03.186387"
-git         ="repo:                 https://github.com/simonarvin/eyeloop"
+journal = "doi:                  10.1101/2020.07.03.186387"
+git = "repo:                 https://github.com/simonarvin/eyeloop"
+
 
 def clear() -> None:
-
     # for windows
     if name == 'nt':
         _ = system('cls')
@@ -17,8 +18,9 @@ def clear() -> None:
     else:
         _ = system('clear')
 
+
 def logo(label="") -> None:
-    logo=r"""
+    logo = r"""
                                 >> {}
 
      ___      ___       __   __   __
@@ -26,11 +28,13 @@ def logo(label="") -> None:
     |___  |  |___ |___ \__/ \__/ |
 
                                   v{}
-                                           """.format(label,config.version)
+                                           """.format(label, config.version)
     return logo
+
+
 def welcome(label="") -> None:
     clear()
-    msg=r"""
+    msg = r"""
     {}
     Developed by Simon Arvin
     Yonehara Laboratory
@@ -38,5 +42,5 @@ def welcome(label="") -> None:
     Translational Neuroscience (DANDRITE)
 
     {}
-    {}{}""".format(logo(label),git, journal,linebreak)
+    {}{}""".format(logo(label), git, journal, linebreak)
     print(msg)
