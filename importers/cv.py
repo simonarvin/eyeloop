@@ -1,44 +1,42 @@
 import cv2
-from utilities.general_operations import check_path_type
-from importers.importer import IMPORTER
+
 import config
+from importers.importer import IMPORTER
+from utilities.general_operations import check_path_type
+
 
 class Importer(IMPORTER):
 
     def __init__(self) -> None:
         super().__init__()
 
-
-
-    def first_frame(self)->None:
+    def first_frame(self) -> None:
         self.path = config.arguments.video
         pathtype = check_path_type(self.path)
 
         # load first frame
-        if pathtype == "file": #or stream
+        if pathtype == "file":  # or stream
             if self.path == "0":
-                self.capture        =   cv2.VideoCapture(0)
+                self.capture = cv2.VideoCapture(0)
             else:
-                self.capture        =   cv2.VideoCapture(self.path)
+                self.capture = cv2.VideoCapture(self.path)
 
             self.route_frame = self.route_cam
-            width          =   self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
-            height         =   self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            width = self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+            height = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-            _, image    =   self.capture.read()
+            _, image = self.capture.read()
             try:
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             except:
-                image=image[...,0]
+                image = image[..., 0]
         elif pathtype == "folder":
-
 
             config.file_manager.input_folderpath = self.path
 
             config.file_manager.input_folderpath = self.path
 
             image = config.file_manager.read_image(self.frame)
-
 
             try:
                 height, width, _ = image.shape
@@ -48,9 +46,7 @@ class Importer(IMPORTER):
                 height, width = image.shape
                 self.route_frame = self.route_sequence_flat
 
-
         self.arm(width, height, image)
-
 
     def route(self) -> None:
         self.first_frame()
@@ -70,7 +66,7 @@ class Importer(IMPORTER):
 
     def route_sequence_sing(self) -> None:
 
-        image = config.file_manager.read_image(self.frame)[...,0]
+        image = config.file_manager.read_image(self.frame)[..., 0]
         self.proceed(image)
 
     def route_sequence_flat(self) -> None:
@@ -86,12 +82,11 @@ class Importer(IMPORTER):
         2: frame save for offline processing
         """
 
-        _, image    =   self.capture.read()
+        _, image = self.capture.read()
 
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         self.proceed(image)
-
 
     def release(self) -> None:
         self.route_frame = lambda _: None

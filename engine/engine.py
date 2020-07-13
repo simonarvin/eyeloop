@@ -1,46 +1,47 @@
-import cv2
 import time
-import numpy as np
+
+import cv2
 
 import config
-from engine.processor import Shape
 from constants.engine_constants import *
+from engine.processor import Shape
 from utilities.general_operations import to_int, tuple_int
+
 
 class Engine:
     def __init__(self, eyeloop):
 
-        self.live = True #Access this to check if Core is running.
+        self.live = True  # Access this to check if Core is running.
 
         self.eyeloop = eyeloop
-        self.model = config.arguments.model  #   Used for assigning appropriate circular model.
+        self.model = config.arguments.model  # Used for assigning appropriate circular model.
 
-        if config.arguments.markers == False:  #   Markerless. -m 0 (default)
+        if config.arguments.markers == False:  # Markerless. -m 0 (default)
             self.place_markers = lambda: None
-        else:                           #   Enables markers to remove artifacts. -m 1
+        else:  # Enables markers to remove artifacts. -m 1
             self.place_markers = self.real_place_markers
-        self.marks          =   []
+        self.marks = []
 
-        if config.arguments.tracking == 0:   #   Recording mode. --tracking 0
+        if config.arguments.tracking == 0:  # Recording mode. --tracking 0
             self.iterate = self.record
-        else:                       #   Tracking mode. --tracking 1 (default)
+        else:  # Tracking mode. --tracking 1 (default)
             self.iterate = self.track
 
         self.angle = 0
         self.extractors = []
 
-        self.std            =   -1  #    Used for infering blinking.
-        self.mean           =   -1  #    Used for infering blinking.
+        self.std = -1  # Used for infering blinking.
+        self.mean = -1  # Used for infering blinking.
 
-        max_cr_processor    =   3
-        self.cr_processors  =   [Shape(type = 2) for _ in range(max_cr_processor)]
-        self.pupil_processor=   Shape()
+        max_cr_processor = 3
+        self.cr_processors = [Shape(type=2) for _ in range(max_cr_processor)]
+        self.pupil_processor = Shape()
 
         #   Via "gui", assign "refresh_pupil" to function "processor.refresh_source"
         #   when the pupil has been selected.
-        self.refresh_pupil  =   lambda x: None
+        self.refresh_pupil = lambda x: None
 
-    def load_extractors(self, extractors:list = []) -> None:
+    def load_extractors(self, extractors: list = []) -> None:
         self.extractors = extractors
 
     def real_place_markers(self) -> None:
@@ -51,10 +52,13 @@ class Engine:
         for i, mark in enumerate(self.marks):
             if (i % 2) == 0:
                 try:
-                    self.pupil_processor.area[mark[1]-self.pupil_processor.corners[0][1]:self.marks[i+1][1]-self.pupil_processor.corners[0][1],
-                    mark[0]-self.pupil_processor.corners[0][0]:self.marks[i+1][0]-self.pupil_processor.corners[0][0]]=100
+                    self.pupil_processor.area[
+                    mark[1] - self.pupil_processor.corners[0][1]:self.marks[i + 1][1] - self.pupil_processor.corners[0][
+                        1],
+                    mark[0] - self.pupil_processor.corners[0][0]:self.marks[i + 1][0] - self.pupil_processor.corners[0][
+                        0]] = 100
                 except:
-                    #odd marks or no pupil yet.
+                    # odd marks or no pupil yet.
                     break
 
     def run_extractors(self) -> None:
@@ -80,27 +84,26 @@ class Engine:
         timestamp = time.time()
 
         self.dataout = {
-        "time" : timestamp,
-        "frame" : config.importer.frame,
-        "blink" : -1,
-        "cr_dim" : -1,
-        "cr_cen" : -1,
-        "cr_ang" : -1,
-        "pupil_dim" : -1,
-        "pupil_cen" : -1,
-        "pupil_ang" : -1
+            "time": timestamp,
+            "frame": config.importer.frame,
+            "blink": -1,
+            "cr_dim": -1,
+            "cr_cen": -1,
+            "cr_ang": -1,
+            "pupil_dim": -1,
+            "pupil_cen": -1,
+            "pupil_ang": -1
         }
 
         config.graphical_user_interface.update_record(self.source)
 
         self.run_extractors()
 
-
     def arm(self, width, height, image) -> None:
         self.norm = (width + height) * .003
         self.norm_cr_artefact = int(6 * self.norm)
 
-        self.mean=np.mean(image)
+        self.mean = np.mean(image)
         self.base_mean = -1
         self.blink = 0
 
@@ -111,21 +114,21 @@ class Engine:
 
         self.update_feed(image)
 
-        self.pupil_processor.binarythreshold = float(np.min(self.source))*.7
+        self.pupil_processor.binarythreshold = float(np.min(self.source)) * .7
         for cr_processor in self.cr_processors:
-            cr_processor.binarythreshold = float(np.min(self.source))*.7
+            cr_processor.binarythreshold = float(np.min(self.source)) * .7
 
-    def check_blink(self, threshold = 5) -> bool:
+    def check_blink(self, threshold=5) -> bool:
         """
         Analyzes the monochromatic distribution of the frame,
         to infer blinking. Change in mean during blinking is very distinct.
         """
 
-        mean            = np.mean(self.source)
+        mean = np.mean(self.source)
         delta = self.mean - mean
-        self.mean=mean
+        self.mean = mean
 
-    #    print("delta", delta)
+        #    print("delta", delta)
         if abs(delta) > 1.1:
             self.blink = 10
             print("blink!")
@@ -134,8 +137,7 @@ class Engine:
 
             self.blink -= 1
             return False
-        self.blink=0
-
+        self.blink = 0
 
         return True
 
@@ -159,7 +161,9 @@ class Engine:
                 offsetx, offsety = -self.pupil_processor.corners[0]
             except:
                 offsetx, offsety = 0, 0
-                _, pupil_area = cv2.threshold(cv2.GaussianBlur(self.pupil_source, (self.pupil_processor.blur, self.pupil_processor.blur), 0), 60 + self.pupil_processor.binarythreshold, 255, cv2.THRESH_BINARY_INV)
+                _, pupil_area = cv2.threshold(
+                    cv2.GaussianBlur(self.pupil_source, (self.pupil_processor.blur, self.pupil_processor.blur), 0),
+                    60 + self.pupil_processor.binarythreshold, 255, cv2.THRESH_BINARY_INV)
 
             for cr_processor in self.cr_processors:
                 if cr_processor.active:
@@ -169,8 +173,8 @@ class Engine:
                         self.cr_artifacts(cr_processor, offsetx, offsety, pupil_area)
                         cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
 
-            self.refresh_pupil(self.pupil_source) #lambda _: None when pupil not selected in gui.
-            self.place_markers() #lambda: None when markerless (-m 0).
+            self.refresh_pupil(self.pupil_source)  # lambda _: None when pupil not selected in gui.
+            self.place_markers()  # lambda: None when markerless (-m 0).
 
             if self.pupil_processor.track():
                 self.pupil = self.pupil_processor.center
@@ -189,18 +193,16 @@ class Engine:
             self.release()
             return
 
-
-
         self.dataout = {
-        "time" : timestamp,
-        "frame" : config.importer.frame,
-        "blink" : blink,
-        "cr_dim" : (cr_width, cr_height),
-        "cr_cen" : cr_center,
-        "cr_ang" : cr_angle,
-        "pupil_dim" : (pupil_width, pupil_height),
-        "pupil_cen" : pupil_center,
-        "pupil_ang" : pupil_angle
+            "time": timestamp,
+            "frame": config.importer.frame,
+            "blink": blink,
+            "cr_dim": (cr_width, cr_height),
+            "cr_cen": cr_center,
+            "cr_ang": cr_angle,
+            "pupil_dim": (pupil_width, pupil_height),
+            "pupil_cen": pupil_center,
+            "pupil_ang": pupil_angle
         }
 
         self.run_extractors()
@@ -223,7 +225,7 @@ class Engine:
         """
 
         self.live = False
-        
+
         try:
             config.importer.release()
         except:
@@ -235,7 +237,6 @@ class Engine:
             except:
                 pass
 
-
     def update_feed(self, img) -> None:
 
         self.source = img.copy()
@@ -243,7 +244,7 @@ class Engine:
 
         self.iterate()
 
-    def cr_artifacts(self, cr_processor, offsetx:int, offsety:int, pupil_area) -> None:
+    def cr_artifacts(self, cr_processor, offsetx: int, offsety: int, pupil_area) -> None:
         """
         Computes pupillary overlaps and acts to remove these artifacts.
         """
@@ -253,12 +254,13 @@ class Engine:
         cr_center_int = tuple_int(cr_center)
         larger_width, larger_height = larger_radius = tuple(int(1.2 * element) for element in cr_dimensions_int)
 
-        cr_width_norm = larger_width  * self.norm
+        cr_width_norm = larger_width * self.norm
         cr_height_norm = larger_height * self.norm
 
         dimensional_product = larger_width * larger_height
 
-        arc = [dimensional_product / np.sqrt((cr_width_norm * anglesteps_cos[i])**2 + (cr_width_norm * anglesteps_sin[i])**2) for i in angular_range]
+        arc = [dimensional_product / np.sqrt(
+            (cr_width_norm * anglesteps_cos[i]) ** 2 + (cr_width_norm * anglesteps_sin[i]) ** 2) for i in angular_range]
         cos_sin_arc = [(to_int(anglesteps_cos[i] * arc[i]), to_int(anglesteps_sin[i] * arc[i])) for i in angular_range]
 
         hit_list = zeros.copy()
@@ -267,11 +269,10 @@ class Engine:
             cos, sin = arc_element
             x = cr_center_int[0] + offsetx + cos
             y = cr_center_int[1] + offsety + sin
-            n=1
-
+            n = 1
 
             while n < self.norm_cr_artefact:
-                n+=1
+                n += 1
                 try:
                     if pupil_area[y, x] != 0:
                         hit_list[i] = i + 1
@@ -281,7 +282,6 @@ class Engine:
                         y += sin
                 except:
                     break
-
 
         if np.any(hit_list):
             delta = np.count_nonzero(number_row - hit_list)
@@ -296,5 +296,6 @@ class Engine:
                         cos, sin = cos_sin_arc[element - 1]
                         x = cr_center_int[0] + cos
                         y = cr_center_int[1] + sin
-                        cv2.ellipse(self.pupil_source, cr_center_int, larger_radius, cr_angle, element * 40-40, element*40, 0, 4) #normalize qqqq
-                        #cv2.line(self.pupil_source, cr_center_int, (x, y), 0, 4) #normalize linewidth qqqq
+                        cv2.ellipse(self.pupil_source, cr_center_int, larger_radius, cr_angle, element * 40 - 40,
+                                    element * 40, 0, 4)  # normalize qqqq
+                        # cv2.line(self.pupil_source, cr_center_int, (x, y), 0, 4) #normalize linewidth qqqq

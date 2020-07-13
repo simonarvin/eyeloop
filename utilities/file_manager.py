@@ -1,7 +1,9 @@
-import time
 import os
+import time
+
 import cv2
 import numpy as np
+
 
 class File_Manager:
     """
@@ -11,7 +13,8 @@ class File_Manager:
     - Reads image sequences for offline analysis.
     - Saves images from camera streams.
     """
-    def __init__(self, dir:str) -> None:
+
+    def __init__(self, dir: str) -> None:
 
         self.directory = dir + "/data"
         self.input_folderpath = ""
@@ -26,7 +29,7 @@ class File_Manager:
 
         os.mkdir(self.new_folderpath)
 
-    def save_image(self, image:np.ndarray, frame:int) -> None:
+    def save_image(self, image: np.ndarray, frame: int) -> None:
         """
         Saves video sequence to new folderpath.
         """
@@ -34,7 +37,7 @@ class File_Manager:
         file = r'{}/frame_{}.jpg'.format(self.new_folderpath, frame)
         cv2.imwrite(file, image)
 
-    def read_image(self, frame:int) -> np.ndarray:
+    def read_image(self, frame: int) -> np.ndarray:
         """
         Reads video sequence from the input folderpath.
         Command-line argument -v [dir] sets this path.

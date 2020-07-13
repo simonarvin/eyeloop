@@ -1,16 +1,18 @@
 import time
-from pymba import Vimba
-from pymba import Frame
-from importers.importer import IMPORTER
-import config
 
-#For pymba documentation, see:
-#https://github.com/morefigs/pymba
+from pymba import Frame
+from pymba import Vimba
+
+import config
+from importers.importer import IMPORTER
+
+
+# For pymba documentation, see:
+# https://github.com/morefigs/pymba
 
 class Importer(IMPORTER):
 
-
-    def first_frame(self)->None:
+    def first_frame(self) -> None:
         # load first frame
         with Vimba() as vimba:
             camera = vimba.camera(0)
@@ -34,10 +36,9 @@ class Importer(IMPORTER):
         :param delay: Display delay in milliseconds, use 0 for indefinite.
         """
 
-
         image = frame.buffer_data_numpy()
 
-        #image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
+        # image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
 
         image = self.rotate(image, config.engine.angle)
 
@@ -54,12 +55,11 @@ class Importer(IMPORTER):
         self.first_frame()
 
         with Vimba() as vimba:
-
             camera = vimba.camera(0)
 
             camera.open()
 
-            camera.ExposureTime = 200 # play around with this if exposure is too low
+            camera.ExposureTime = 200  # play around with this if exposure is too low
             camera.ExposureAuto = "Off"
             camera.AcquisitionFrameRateMode = 'Basic'
 
