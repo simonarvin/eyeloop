@@ -168,10 +168,12 @@ class Engine:
             for cr_processor in self.cr_processors:
                 if cr_processor.active:
                     cr_processor.refresh_source(self.source)
-
-                    if cr_processor.track():
-                        self.cr_artifacts(cr_processor, offsetx, offsety, pupil_area)
-                        cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
+                    try:
+                        if cr_processor.track():
+                            self.cr_artifacts(cr_processor, offsetx, offsety, pupil_area)
+                            cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
+                    except:
+                        pass #for now, let's pass any errors arising from Shape().track() - this caused EyeLoop to crash when cr_processor.track() failed.
 
             self.refresh_pupil(self.pupil_source)  # lambda _: None when pupil not selected in gui.
             self.place_markers()  # lambda: None when markerless (-m 0).
