@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append('../')
-
 from engine.engine import Engine
 
 from utilities.format_print import welcome
@@ -28,7 +24,7 @@ class EyeLoop:
         welcome("Server")
 
         config.arguments = Arguments()
-        config.file_manager = File_Manager(dir=config.arguments.destination)
+        config.file_manager = File_Manager(output_root=config.arguments.output_dir)
 
         config.graphical_user_interface = GUI()
 

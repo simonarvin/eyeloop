@@ -11,11 +11,11 @@ class IMPORTER:
         self.live = True
         self.scale = config.arguments.scale
         self.frame = 0
-        self.path = config.arguments.video
+        self.vid_path = config.arguments.video
 
     def arm(self, width, height, image):
         self.frame = 0
-        self.path = config.engine.arguments.video
+        self.vid_path = config.engine.arguments.video
 
     def arm(self, width, height, image):
 
