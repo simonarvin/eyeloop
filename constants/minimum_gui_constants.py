@@ -1,6 +1,6 @@
 import cv2
 
-#rgb color codes
+# rgb color codes
 green = (0, 220, 0)
 black = (0, 0, 0)
 red = (0, 0, 220)

@@ -1,5 +1,6 @@
-import time
 import json
+import time
+
 
 class DAQ_extractor:
     def __init__(self, dir):
@@ -10,13 +11,12 @@ class DAQ_extractor:
 
     def fetch(self, engine):
         try:
-            self.log.write(json.dumps(engine.dataout)+"\n")
+            self.log.write(json.dumps(engine.dataout) + "\n")
         except:
             pass
 
     def release(self):
         self.log.close()
-
 
     # def set_digital_line(channel, value):
     # digital_output = PyDAQmx.Task()

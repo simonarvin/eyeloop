@@ -1,10 +1,11 @@
+import time
+
 import cv2
 import numpy as np
-import time
-import matplotlib.pyplot as plt
+
 
 class ClosedLoop_Extractor:
-    def __init__(self, MAXSIZE = 3231, x = -0, y = 0, w = 100, h=100):
+    def __init__(self, MAXSIZE=3231, x=-0, y=0, w=100, h=100):
         """
         RUN CALIBRATE, THEN SET MAXSIZE ACCORDINGLY
         """
@@ -13,131 +14,131 @@ class ClosedLoop_Extractor:
         self.size = 0
 
         self.brightness = 0
-        self.unit = np.ones((h,w), dtype=float)
+        self.unit = np.ones((h, w), dtype=float)
 
         self.x, self.y = x, y
 
         self.velocity = 0
         self.index = 0
 
-        self.q_coef = 0.1 #Scalar
-        self.I_coef = .1 #Rate
+        self.q_coef = 0.1  # Scalar
+        self.I_coef = .1  # Rate
         self.friction = .05
 
         self.state_dict = {
-        1: "closed-loop",
-        2: "white",
-        0: "black"
+            1: "closed-loop",
+            2: "white",
+            0: "black"
         }
 
         self.protocol = [
-        {"t" : 6,
-        "s"  : 0,
-        "p"  : {}},
+            {"t": 6,
+             "s": 0,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.001,
-        "I_coef" : 0.01,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.001,
+                 "I_coef": 0.01,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.001,
-        "I_coef" : 0.01,
-        "friction" : 0.05
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.001,
+                 "I_coef": 0.01,
+                 "friction": 0.05
+             }},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.001,
-        "I_coef" : 0.001,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.001,
+                 "I_coef": 0.001,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.001,
-        "I_coef" : 0.05,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.001,
+                 "I_coef": 0.05,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.00025,
-        "I_coef" : 0.01,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.00025,
+                 "I_coef": 0.01,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 0,
-        "p"  : {}},
+            {"t": 6,
+             "s": 0,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.0001,
-        "I_coef" : 0.01,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.0001,
+                 "I_coef": 0.01,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 0,
-        "p"  : {}},
+            {"t": 6,
+             "s": 0,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.0005,
-        "I_coef" : 0.2,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.0005,
+                 "I_coef": 0.2,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.0005,
-        "I_coef" : 0.01,
-        "friction" : 0.1
-        }},
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.0005,
+                 "I_coef": 0.01,
+                 "friction": 0.1
+             }},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {
-        "q_coef" : 0.0005,
-        "I_coef" : 0.1,
-        "friction" : 0.1
-        }}
+            {"t": 60,
+             "s": 1,
+             "p": {
+                 "q_coef": 0.0005,
+                 "I_coef": 0.1,
+                 "friction": 0.1
+             }}
         ]
 
         self.total_steps = len(self.protocol)
@@ -145,7 +146,6 @@ class ClosedLoop_Extractor:
         self.fetch = lambda x: None
 
         source = self.unit * self.brightness
-
 
     def activate(self):
         self.start = time.time()
@@ -167,7 +167,10 @@ class ClosedLoop_Extractor:
     def change_parameters(self, step):
         self.state = step["s"]
 
-        print("\nTransitioning to step {}/{}.\nstate changed to {}\nDuration: {}".format(self.index + 1,self.total_steps, self.state_dict[self.state], step["t"]).upper(), "seconds")
+        print(
+            "\nTransitioning to step {}/{}.\nstate changed to {}\nDuration: {}".format(self.index + 1, self.total_steps,
+                                                                                       self.state_dict[self.state],
+                                                                                       step["t"]).upper(), "seconds")
         for key, value in step["p"].items():
             print("     {} set to {}".format(key, value))
             exec("self." + key + '=' + str(value))
@@ -177,20 +180,19 @@ class ClosedLoop_Extractor:
 
     def r_fetch(self, core):
         w, h = core.dataout["pw"], core.dataout["ph"]
-        size = float(w*h)
+        size = float(w * h)
 
         if self.state == 2:
-            #WHITE
+            # WHITE
             self.brightness = 1
         elif self.state == 0:
-            #BLACK
+            # BLACK
             self.brightness = 0
         elif self.state == 1:
-            #CLOSED LOOP
+            # CLOSED LOOP
 
             if w != -1:
-
-                self.velocity += (self.brightness - self.q_coef * size**2/self.basesize) * self.I_coef
+                self.velocity += (self.brightness - self.q_coef * size ** 2 / self.basesize) * self.I_coef
                 self.velocity -= self.velocity * self.friction
                 self.velocity = round(self.velocity, 3)
 
@@ -198,7 +200,6 @@ class ClosedLoop_Extractor:
 
                 self.brightness = min(self.brightness, 1)
                 self.brightness = max(self.brightness, 0)
-
 
         step = self.protocol[self.index]
 
@@ -215,11 +216,11 @@ class ClosedLoop_Extractor:
         else:
             core.dataout["trigger"] = 0
 
-        #self.arr.append(self.brightness)
+        # self.arr.append(self.brightness)
         core.dataout["closed_looptest"] = self.brightness
         core.dataout["closed_loopparam"] = step
 
-        source = self.unit * self.brightness**2
+        source = self.unit * self.brightness ** 2
 
         cv2.imshow("Brightness Test", source)
         cv2.moveWindow("Brightness Test", self.x, self.y)

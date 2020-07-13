@@ -1,9 +1,10 @@
 import sys
+
 sys.path.append('../')
 
 from engine.engine import Engine
 
-from utilities.format_print import clear, welcome
+from utilities.format_print import welcome
 from utilities.argument_parser import Arguments
 from utilities.file_manager import File_Manager
 
@@ -21,12 +22,13 @@ class EyeLoop:
     Lead developer: Simon Arvin
     Git: https://github.com/simonarvin/eyeloop
     """
+
     def __init__(self):
 
         welcome("Server")
 
         config.arguments = Arguments()
-        config.file_manager = File_Manager(dir = config.arguments.destination)
+        config.file_manager = File_Manager(dir=config.arguments.destination)
 
         config.graphical_user_interface = GUI()
 
@@ -34,7 +36,6 @@ class EyeLoop:
 
         fps_counter = FPS_extractor()
         data_acquisition = DAQ_extractor(config.file_manager.new_folderpath)
-
 
         extractors = [fps_counter, data_acquisition]
         config.engine.load_extractors(extractors)
@@ -48,10 +49,9 @@ class EyeLoop:
         except Exception as e:
             print("Invalid importer selected.\n", e)
 
-        config.importer  =   Importer()
+        config.importer = Importer()
         config.importer.route()
 
 
 if __name__ == '__main__':
-
     EyeLoop()

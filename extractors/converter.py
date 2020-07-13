@@ -1,28 +1,29 @@
 import numpy as np
 
+
 class Conversion_extractor:
-    def __init__(self, type = 1, animal:str = "mouse", angle = 0, center = None, interfaces = []):
+    def __init__(self, type=1, animal: str = "mouse", angle=0, center=None, interfaces=[]):
         self.angle = angle
         self.center = center
         if animal == "mouse":
-            self.effective_rotation_radius = 1.25 #mm mouse
-            self.bulbucorneal_distance = 0.2 #mm
+            self.effective_rotation_radius = 1.25  # mm mouse
+            self.bulbucorneal_distance = 0.2  # mm
         elif animal == "marmoset":
-            self.effective_rotation_radius = 3.4 #mm :marmoset https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1913220/
-            self.bulbucorneal_distance = 2.1 #marmoset: https://pubmed.ncbi.nlm.nih.gov/8333154/
+            self.effective_rotation_radius = 3.4  # mm :marmoset https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1913220/
+            self.bulbucorneal_distance = 2.1  # marmoset: https://pubmed.ncbi.nlm.nih.gov/8333154/
 
         elif animal == "human":
-            self.effective_rotation_radius = 6.4 # human https://pubmed.ncbi.nlm.nih.gov/9293516/
-            self.bulbucorneal_distance = 4.6 #human
+            self.effective_rotation_radius = 6.4  # human https://pubmed.ncbi.nlm.nih.gov/9293516/
+            self.bulbucorneal_distance = 4.6  # human
 
-
-        self.err_fraction = self.effective_rotation_radius/(self.effective_rotation_radius - self.bulbucorneal_distance)
+        self.err_fraction = self.effective_rotation_radius / (
+                    self.effective_rotation_radius - self.bulbucorneal_distance)
 
         self.interfaces = interfaces
 
-        if type == 1 or type == "coordinates": #coordinates
+        if type == 1 or type == "coordinates":  # coordinates
             self.fetch = self.coordinates
-        elif type == 2 or type == "area": #area
+        elif type == 2 or type == "area":  # area
             self.fetch = self.area
 
     def rotate(self, point, ang, origin):
@@ -33,7 +34,7 @@ class Conversion_extractor:
         """
 
         angle = np.radians(ang)
-        #print(ang, angle)
+        # print(ang, angle)
         ox, oy = origin
         px, py = point
 
@@ -52,14 +53,12 @@ class Conversion_extractor:
         except:
             return
 
-
         y = (point2[1] - point1[1]) * self.err_fraction + point1[1]
-        #rad=np.radians(((point1[0] - x)/self.effective_rotation_radius))
+        # rad=np.radians(((point1[0] - x)/self.effective_rotation_radius))
 
-        ang_pos_hor = np.arcsin(np.clip(np.radians(((point1[0] - x)/self.effective_rotation_radius)),-1,1))
+        ang_pos_hor = np.arcsin(np.clip(np.radians(((point1[0] - x) / self.effective_rotation_radius)), -1, 1))
 
-        ang_pos_ver = np.arcsin(np.clip(np.radians(-(point1[1] - y)/self.effective_rotation_radius),-1,1))
-
+        ang_pos_ver = np.arcsin(np.clip(np.radians(-(point1[1] - y) / self.effective_rotation_radius), -1, 1))
 
         return ang_pos_hor, ang_pos_ver
 
@@ -91,13 +90,12 @@ class Conversion_extractor:
             radius_1 = np.sin(extremes[0]) * self.effective_rotation_radius
 
             radius_2 = np.sin(extremes[1]) * self.effective_rotation_radius
-            area_1 = np.pi * radius_2**2
-            area_2 = np.pi * radius_2**2
+            area_1 = np.pi * radius_2 ** 2
+            area_2 = np.pi * radius_2 ** 2
 
             return np.nanmean([area_1, area_2])
         except:
             return float("nan")
-
 
     def coordinates(self, core):
 
@@ -108,16 +106,16 @@ class Conversion_extractor:
             dataout = core
 
         try:
-            #print(dataout["pupil_cen"], dataout["cr_cen"])
+            # print(dataout["pupil_cen"], dataout["cr_cen"])
             pupil, cornea = dataout["pupil_cen"], dataout["cr_cen"]
 
-            #pupil = self.rotate(pupil, self.angle, self.center)
-            #cornea = self.rotate(cornea, self.angle, self.center)
+            # pupil = self.rotate(pupil, self.angle, self.center)
+            # cornea = self.rotate(cornea, self.angle, self.center)
 
             return self.to_angular(pupil, cornea)
         except Exception as e:
             print(e)
             return float("nan")
 
-        #for interface in self.interfaces:
+        # for interface in self.interfaces:
         #    interface.fetch(ang_pos_hor, ang_pos_ver)

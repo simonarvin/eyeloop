@@ -1,11 +1,12 @@
+import time
+
 import cv2
 import numpy as np
-import time
 
 
 class Open_Loop_extractor():
-    def __init__(self, x:int = 50, y:int = 50, w:int = 50, h:int = 50) -> None:
-        
+    def __init__(self, x: int = 50, y: int = 50, w: int = 50, h: int = 50) -> None:
+
         self.fetch = lambda x: None
 
         self.raw = np.ones((h, w), dtype=float)
@@ -17,70 +18,68 @@ class Open_Loop_extractor():
         self.state = 0
 
         self.state_dict = {
-        1: "open-loop",
-        2: "white",
-        0: "black"
+            1: "open-loop",
+            2: "white",
+            0: "black"
         }
 
         self.index = 0
 
         self.protocol = [
-        {"t" : 6,
-        "s"  : 0,
-        "p"  : {}},
+            {"t": 6,
+             "s": 0,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {"frequency" : 0.1}},
+            {"t": 60,
+             "s": 1,
+             "p": {"frequency": 0.1}},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {"frequency" : 0.2}},
+            {"t": 60,
+             "s": 1,
+             "p": {"frequency": 0.2}},
 
-        {"t" : 6,
-        "s"  : 0,
-        "p"  : {}},
+            {"t": 6,
+             "s": 0,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {"frequency" : 0.4}},
+            {"t": 60,
+             "s": 1,
+             "p": {"frequency": 0.4}},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {"frequency" : 0.8}},
+            {"t": 60,
+             "s": 1,
+             "p": {"frequency": 0.8}},
 
-        {"t" : 6,
-        "s"  : 0,
-        "p"  : {}},
+            {"t": 6,
+             "s": 0,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {"frequency" : 0.01}},
+            {"t": 60,
+             "s": 1,
+             "p": {"frequency": 0.01}},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}},
+            {"t": 6,
+             "s": 2,
+             "p": {}},
 
-        {"t" : 60,
-        "s"  : 1,
-        "p"  : {"frequency" : 0.05}},
+            {"t": 60,
+             "s": 1,
+             "p": {"frequency": 0.05}},
 
-        {"t" : 6,
-        "s"  : 2,
-        "p"  : {}}
+            {"t": 6,
+             "s": 2,
+             "p": {}}
         ]
 
         self.total_steps = len(self.protocol)
-
-
 
     def activate(self) -> None:
         self.start = time.time()
@@ -102,24 +101,27 @@ class Open_Loop_extractor():
     def change_parameters(self, step) -> None:
         self.state = step["s"]
 
-        print("\nTransitioning to step {}/{}.\nstate changed to {}\nDuration: {}".format(self.index + 1,self.total_steps, self.state_dict[self.state], step["t"]).upper(), "seconds")
+        print(
+            "\nTransitioning to step {}/{}.\nstate changed to {}\nDuration: {}".format(self.index + 1, self.total_steps,
+                                                                                       self.state_dict[self.state],
+                                                                                       step["t"]).upper(), "seconds")
         for key, value in step["p"].items():
             print("     {} set to {}".format(key, value))
             exec("self." + key + '=' + str(value))
 
     def r_fetch(self, core):
         if self.state == 2:
-            #WHITE
+            # WHITE
             source = self.raw * 255
             self.phase = 0
 
         elif self.state == 0:
-            #BLACK
+            # BLACK
             source = self.raw * 0
             self.phase = 0
 
         elif self.state == 1:
-            #OPEN LOOP
+            # OPEN LOOP
             source = self.raw * np.sin(self.phase) * .5 + .5
             self.phase += self.frequency
 
