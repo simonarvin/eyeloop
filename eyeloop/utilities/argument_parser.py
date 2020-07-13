@@ -1,8 +1,9 @@
 import argparse
-import os
 from pathlib import Path
+
 EYELOOP_DIR = Path(__file__).parent.parent
 PROJECT_DIR = EYELOOP_DIR.parent
+
 
 class Arguments:
     """
