@@ -25,10 +25,14 @@ class Importer(IMPORTER):
             height = self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
             _, image = self.capture.read()
-            try:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            except:
-                image = image[..., 0]
+            if self.capture.isOpened():
+                try:
+                    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                except:
+                    image = image[..., 0]
+            else:
+                raise ValueError("Failed to initialize video stream.\nMake sure that the video path is correct, or that your webcam is plugged in and compatible with opencv.")
+
         elif self.vid_path.is_dir():
 
             config.file_manager.input_folderpath = self.vid_path
