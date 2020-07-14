@@ -14,8 +14,8 @@ class Importer(IMPORTER):
     def first_frame(self) -> None:
         self.vid_path = Path(config.arguments.video)
         # load first frame
-        if self.vid_path.is_file() is True:  # or stream
-            if self.vid_path == "0":
+        if self.vid_path.name == "0" or self.vid_path.is_file():  # or stream
+            if self.vid_path.name == "0":
                 self.capture = cv2.VideoCapture(0)
             else:
                 self.capture = cv2.VideoCapture(str(self.vid_path))
@@ -29,7 +29,7 @@ class Importer(IMPORTER):
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             except:
                 image = image[..., 0]
-        elif self.vid_path.is_dir() is True:
+        elif self.vid_path.is_dir():
 
             config.file_manager.input_folderpath = self.vid_path
 
