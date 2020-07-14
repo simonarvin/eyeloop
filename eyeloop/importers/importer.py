@@ -14,10 +14,6 @@ class IMPORTER:
         self.vid_path = config.arguments.video
 
     def arm(self, width, height, image):
-        self.frame = 0
-        self.vid_path = config.engine.arguments.video
-
-    def arm(self, width, height, image):
 
         self.dimensions = tuple_int((width * self.scale, height * self.scale))
 
