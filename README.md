@@ -43,9 +43,9 @@ EyeLoop consists of two functional domains: the engine and the optional modules.
 
 One of EyeLoop's most appealing features is its modularity: Experiments are built simply by combining modules with the core Engine. Thus, the Engine has one task only: to compute eye-tracking data based on an *imported* sequence, and offer the generated data for *extraction*.
 
-> How does [the Engine](https://github.com/simonarvin/eyeloop/blob/master/engine/README.md) work?\
-> How does [the Importer](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) work?\
-> How does [the Extractor](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) work?
+> How does [the Engine](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/engine/README.md) work?\
+> How does [the Importer](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/importers/README.md) work?\
+> How does [the Extractor](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/extractors/README.md) work?
 
 ## Getting started ##
 
@@ -82,7 +82,7 @@ To access the video sequence, EyeLoop must be connected to an appropriate *impor
 ```
 python eyeloop/run_eyeloop.py --importer cv/vimba
 ```
-> [Click here](https://github.com/simonarvin/eyeloop/blob/master/importers/README.md) for more information on *importers*.
+> [Click here](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/importers/README.md) for more information on *importers*.
 
 To perform offline eye-tracking, we pass the video argument ```--video``` with the path of the video sequence:
 ```
@@ -128,7 +128,7 @@ class Extractor:
 ```
 ```fetch()``` gains access to all eye-tracking data in real-time via the engine pointer.
 
-> [Click here](https://github.com/simonarvin/eyeloop/blob/master/extractors/README.md) for more information on *extractors*.
+> [Click here](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/extractors/README.md) for more information on *extractors*.
 
 ### Data acquisition class ###
 
@@ -173,9 +173,9 @@ python eyeloop/run_eyeloop.py
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
 
 ## Graphical user interface ##
-The default graphical user interface in EyeLoop is [*minimum-gui*.](https://github.com/simonarvin/eyeloop/blob/master/guis/minimum/README.md)
+The default graphical user interface in EyeLoop is [*minimum-gui*.](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/guis/minimum/README.md)
 
-> EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/guis/README.md) for instructions on how to build your own.
+> EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/guis/README.md) for instructions on how to build your own.
 
 ## Known issues ##
 - [ ] Respawning/freezing windows when running *minimum-gui* in Ubuntu.
