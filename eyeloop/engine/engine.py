@@ -106,6 +106,8 @@ class Engine:
         self.norm_cr_artefact = int(6 * self.norm)
 
         self.mean = np.mean(image)
+        self.blink_threshold = -0.046 * np.var(image) + 68.11
+
         self.base_mean = -1
         self.blink = 0
 
@@ -131,7 +133,7 @@ class Engine:
         self.mean = mean
 
         #    print("delta", delta)
-        if abs(delta) > 1.1:
+        if abs(delta) > self.blink_threshold:
             self.blink = 10
             print("blink!")
             return False
