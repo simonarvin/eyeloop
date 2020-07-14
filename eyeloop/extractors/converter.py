@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Conversion_extractor:
-    def __init__(self, type=1, animal: str = "mouse", angle=0, center=None, interfaces=[]):
+    def __init__(self, type=1, animal: str = "mouse", angle=0, center=None, interfaces=None):
         self.angle = angle
         self.center = center
         if animal == "mouse":
@@ -19,6 +19,8 @@ class Conversion_extractor:
         self.err_fraction = self.effective_rotation_radius / (
                     self.effective_rotation_radius - self.bulbucorneal_distance)
 
+        if interfaces is None:
+            interfaces = []
         self.interfaces = interfaces
 
         if type == 1 or type == "coordinates":  # coordinates

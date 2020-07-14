@@ -41,7 +41,9 @@ class Engine:
         #   when the pupil has been selected.
         self.refresh_pupil = lambda x: None
 
-    def load_extractors(self, extractors: list = []) -> None:
+    def load_extractors(self, extractors: list = None) -> None:
+        if extractors is None:
+            extractors = []
         self.extractors = extractors
 
     def real_place_markers(self) -> None:
