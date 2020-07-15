@@ -135,7 +135,7 @@ class Engine:
         #    print("delta", delta)
         if abs(delta) > self.blink_threshold:
             self.blink = 10
-            print("blink!")
+            #print("blink!")
             return False
         elif self.blink != 0:
 
