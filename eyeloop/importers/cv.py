@@ -60,6 +60,7 @@ class Importer(IMPORTER):
             while True:
                 self.route_frame()
         except ValueError:
+            config.engine.release()
             print("Importer released.")
 
     def proceed(self, image) -> None:
@@ -99,6 +100,7 @@ class Importer(IMPORTER):
 
             self.proceed(image)
         else:
+            self.capture.release()
             raise ValueError("No more frames.")
 
     def release(self) -> None:
