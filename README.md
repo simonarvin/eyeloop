@@ -56,6 +56,8 @@ Install EyeLoop simply by cloning the repository:
 git clone https://github.com/simonarvin/eyeloop.git
 ```
 
+>Dependencies: ```python -m pip install -r requirements.txt```
+
 >Using pip:
 > ```pip install .```
 
