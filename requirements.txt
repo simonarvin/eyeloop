@@ -1,3 +1,0 @@
-opencv-contrib-python
-pymba
-numpy
