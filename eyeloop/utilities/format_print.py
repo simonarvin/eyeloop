@@ -1,6 +1,6 @@
 from os import system, name
 
-import config
+import eyeloop.config as config
 
 tab = "       "
 linebreak = "\n{}{}\n".format(tab, 30 * "_")

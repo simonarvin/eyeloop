@@ -1,15 +1,15 @@
-from engine.engine import Engine
+from eyeloop.engine.engine import Engine
 
-from utilities.format_print import welcome
-from utilities.argument_parser import Arguments
-from utilities.file_manager import File_Manager
+from eyeloop.utilities.format_print import welcome
+from eyeloop.utilities.argument_parser import Arguments
+from eyeloop.utilities.file_manager import File_Manager
 
-from extractors.DAQ import DAQ_extractor
-from extractors.frametimer import FPS_extractor
+from eyeloop.extractors.DAQ import DAQ_extractor
+from eyeloop.extractors.frametimer import FPS_extractor
 
-from guis.minimum.minimum_gui import GUI
+from eyeloop.guis.minimum.minimum_gui import GUI
 
-import config
+import eyeloop.config as config
 
 
 class EyeLoop:
@@ -38,7 +38,7 @@ class EyeLoop:
 
         try:
             print("Initiating tracking via {}".format(config.arguments.importer))
-            import_command = "from importers.{} import Importer".format(config.arguments.importer)
+            import_command = "from eyeloop.importers.{} import Importer".format(config.arguments.importer)
 
             exec(import_command, globals())
 

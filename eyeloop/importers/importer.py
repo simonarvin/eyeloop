@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-import config
-from utilities.general_operations import tuple_int
+import eyeloop.config as config
+from eyeloop.utilities.general_operations import tuple_int
 
 
 class IMPORTER:

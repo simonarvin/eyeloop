@@ -2,10 +2,10 @@ import time
 
 import cv2
 
-import config
-from constants.engine_constants import *
-from engine.processor import Shape
-from utilities.general_operations import to_int, tuple_int
+import eyeloop.config as config
+from eyeloop.constants.engine_constants import *
+from eyeloop.engine.processor import Shape
+from eyeloop.utilities.general_operations import to_int, tuple_int
 
 
 class Engine:
