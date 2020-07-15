@@ -106,4 +106,5 @@ class Importer(IMPORTER):
             raise ValueError("No more frames.")
 
     def release(self) -> None:
-        self.route_frame = lambda _: None
+        raise ValueError("Importer released.")
+        #self.route_frame = lambda _: None
