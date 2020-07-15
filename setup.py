@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-from glob import glob
-from os.path import join
-
 from setuptools import setup, find_packages
 
 
-install_requires = [
-    'opencv-contrib-python>=4.2.*',
-    'pymba==0.3.*',
-    'numpy==1.19.*'
-]
+install_requires = install_requires = []
+
+with open('requirements.txt') as f:
+    for line in f.readlines():
+        req = line.strip()
+        if not req or req.startswith('#') or '://' in req:
+            continue
+        install_requires.append(req)
+
 
 setup(
     name='eyeloop',
