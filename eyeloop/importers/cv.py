@@ -56,12 +56,14 @@ class Importer(IMPORTER):
 
     def route(self) -> None:
         self.first_frame()
-        try:
-            while True:
+
+        while True:
+            try:
                 self.route_frame()
-        except ValueError:
-            config.engine.release()
-            print("Importer released.")
+            except ValueError:
+                config.engine.release()
+                print("Importer released.")
+
 
     def proceed(self, image) -> None:
         image = self.resize(image)

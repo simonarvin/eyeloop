@@ -243,6 +243,8 @@ class Engine:
             except:
                 pass
 
+        config.graphical_user_interface.release()
+
     def update_feed(self, img) -> None:
 
         self.source = img.copy()

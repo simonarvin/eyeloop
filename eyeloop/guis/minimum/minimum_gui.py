@@ -282,6 +282,9 @@ class GUI:
         if cv2.waitKey(1) == ord('q'):
             config.engine.release()
 
+    def release(self) -> None:
+        cv2.destroyAllWindows()
+
     def update_track(self, blink: int) -> None:
         frame_preview = cv2.cvtColor(config.engine.source, cv2.COLOR_GRAY2BGR)
         frame_source = frame_preview.copy()
