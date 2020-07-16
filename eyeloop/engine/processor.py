@@ -1,10 +1,10 @@
 import cv2
 
-import config
-from constants.processor_constants import *
-from engine.models.circular import Circle
-from engine.models.ellipsoid import Ellipse
-from utilities.general_operations import to_int, tuple_int
+import eyeloop.config as config
+from eyeloop.constants.processor_constants import *
+from eyeloop.engine.models.circular import Circle
+from eyeloop.engine.models.ellipsoid import Ellipse
+from eyeloop.utilities.general_operations import to_int, tuple_int
 
 
 class Shape():

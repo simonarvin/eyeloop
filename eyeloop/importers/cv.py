@@ -2,8 +2,8 @@ from pathlib import Path
 
 import cv2
 
-import config
-from importers.importer import IMPORTER
+import eyeloop.config as config
+from eyeloop.importers.importer import IMPORTER
 
 
 class Importer(IMPORTER):

@@ -2,9 +2,9 @@ import os
 
 import numpy as np
 
-import config
-from constants.minimum_gui_constants import *
-from utilities.general_operations import to_int, tuple_int
+import eyeloop.config as config
+from eyeloop.constants.minimum_gui_constants import *
+from eyeloop.utilities.general_operations import to_int, tuple_int
 
 
 class GUI:

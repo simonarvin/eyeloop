@@ -2,7 +2,7 @@ import json
 from tkinter import filedialog
 
 import numpy as np
-from interfaces.converter import Conversion_extractor
+from eyeloop.extractors.converter import Conversion_extractor
 
 
 class Parser():

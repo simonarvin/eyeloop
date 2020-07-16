@@ -3,8 +3,8 @@ import time
 from pymba import Frame
 from pymba import Vimba
 
-import config
-from importers.importer import IMPORTER
+import eyeloop.config as config
+from eyeloop.importers.importer import IMPORTER
 
 
 # For pymba documentation, see:

@@ -1,6 +1,6 @@
 import numpy as np
 
-from utilities.general_operations import tuple_int
+from eyeloop.utilities.general_operations import tuple_int
 
 """Demonstration of least-squares fitting of ellipses
     __author__ = "Ben Hammel, Nick Sullivan-Molina"

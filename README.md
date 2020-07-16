@@ -56,8 +56,18 @@ Install EyeLoop simply by cloning the repository:
 git clone https://github.com/simonarvin/eyeloop.git
 ```
 
->Dependencies:
-> ```python pip install -r requirements.txt```
+>Dependencies: ```python -m pip install -r requirements.txt```
+
+>Using pip:
+> ```pip install .```
+
+You may want to use a Conda or Python virtual environment when
+installing `eyeloop`, to avoid mixing up with your system dependencies.
+
+>Using pip and a virtual environment:
+> ```python -m venv venv```
+> ```source venv/bin/activate```
+> ```(venv) pip install .```
 
 Alternatively:
 
@@ -74,19 +84,19 @@ git clone https://github.com/simonarvin/eyeloop_playground.git
 
 ### Initiation ###
 
-EyeLoop is initiated through the command-line interface.
+EyeLoop is initiated through the command-line utility `eyeloop`.
 ```
-python eyeloop/run_eyeloop.py
+eyeloop
 ```
 To access the video sequence, EyeLoop must be connected to an appropriate *importer class* module. Usually, the default opencv importer class (*cv*) is sufficient. For some machine vision cameras, however, a vimba-based importer (*vimba*) is neccessary.
 ```
-python eyeloop/run_eyeloop.py --importer cv/vimba
+eyeloop --importer cv/vimba
 ```
 > [Click here](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/importers/README.md) for more information on *importers*.
 
 To perform offline eye-tracking, we pass the video argument ```--video``` with the path of the video sequence:
 ```
-python eyeloop/run_eyeloop.py --video [file]/[folder]
+eyeloop --video [file]/[folder]
 ```
 <p align="right">
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/models.svg?raw=true" align="right" height="150">
@@ -95,14 +105,14 @@ python eyeloop/run_eyeloop.py --video [file]/[folder]
 EyeLoop can be used on a multitude of eye types, including rodents, human and non-human primates. Specifically, users can suit their eye-tracking session to any species using the ```--model``` argument.
 
 ```
-python eyeloop/run_eyeloop.py --model ellipsoid/circular
+eyeloop --model ellipsoid/circular
 ```
 > In general, the ellipsoid pupil model is best suited for rodents, whereas the circular model is best suited for primates.
 
 To see all command-line arguments, pass:
 
 ```
-python eyeloop/run_eyeloop.py --help
+eyeloop --help
 ```
 
 ## Designing your first experiment ##
@@ -168,7 +178,7 @@ By using ```fetch()```, we shift the phase of the sine function at every time-st
 
 That's it! Test your experiment using:
 ```
-python eyeloop/run_eyeloop.py
+eyeloop
 ```
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
 
