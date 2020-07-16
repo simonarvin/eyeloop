@@ -11,6 +11,7 @@ from eyeloop.guis.minimum.minimum_gui import GUI
 
 import eyeloop.config as config
 
+import sys
 
 class EyeLoop:
     """
@@ -47,6 +48,7 @@ class EyeLoop:
 
         config.importer = Importer()
         config.importer.route()
+        sys.exit(0)
 
 
 if __name__ == '__main__':
