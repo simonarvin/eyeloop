@@ -106,7 +106,7 @@ class Engine:
         self.norm_cr_artefact = int(6 * self.norm)
 
         self.mean = np.mean(image)
-        self.blink_threshold = -0.046 * np.var(image) + 68.11
+        self.blink_threshold = 25.5*np.log(np.var(image)) - 182 #0.046 * np.var(image) - 68.11
 
         self.base_mean = -1
         self.blink = 0
