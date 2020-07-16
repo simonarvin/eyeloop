@@ -34,7 +34,7 @@ class EyeLoop:
         data_acquisition = DAQ_extractor(config.file_manager.new_folderpath)
 
         extractors = [fps_counter, data_acquisition]
-        config.engine.load_extractors(extractors)
+        #config.engine.load_extractors(extractors)
 
         try:
             print("Initiating tracking via {}".format(config.arguments.importer))
