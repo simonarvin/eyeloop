@@ -106,8 +106,10 @@ class Importer(IMPORTER):
 
             self.proceed(image)
         else:
-            self.capture.release()
+
             raise ValueError("No more frames.")
 
     def release(self) -> None:
+        self.capture.release()
+        cv2.destroyAllWindows()
         self.route_frame = lambda _: None

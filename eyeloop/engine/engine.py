@@ -231,11 +231,7 @@ class Engine:
         """
 
         self.live = False
-
-        try:
-            config.importer.release()
-        except:
-            pass
+        config.graphical_user_interface.release()
 
         for extractor in self.extractors:
             try:
@@ -243,7 +239,12 @@ class Engine:
             except:
                 pass
 
-        config.graphical_user_interface.release()
+        try:
+            config.importer.release()
+        except:
+            pass
+
+
 
     def update_feed(self, img) -> None:
 

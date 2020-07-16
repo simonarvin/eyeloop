@@ -283,8 +283,8 @@ class GUI:
             config.engine.release()
 
     def release(self) -> None:
-        cv2.destroyAllWindows()
         self.out.release()
+        
 
     def update_track(self, blink: int) -> None:
         frame_preview = cv2.cvtColor(config.engine.source, cv2.COLOR_GRAY2BGR)
