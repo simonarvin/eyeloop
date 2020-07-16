@@ -56,12 +56,16 @@ class Importer(IMPORTER):
 
     def route(self) -> None:
         self.first_frame()
-        try:
-            while True:
+        while True:
+            try:
                 self.route_frame()
-        except Exception as e:
-            print(e)
-            print("Importer released.")
+            except ValueError:
+                config.engine.release()
+                print("Importer released (1).")
+                break
+            except TypeError:
+                print("Importer released (2).")
+                break
 
     def proceed(self, image) -> None:
         image = self.resize(image)
@@ -72,14 +76,16 @@ class Importer(IMPORTER):
 
     def route_sequence_sing(self) -> None:
 
-        image = config.file_manager.read_image(self.frame)[..., 0]
-        self.proceed(image)
+        image = config.file_manager.read_image(self.frame)
+
+        self.proceed(image[..., 0])
 
     def route_sequence_flat(self) -> None:
 
         image = config.file_manager.read_image(self.frame)
 
         self.proceed(image)
+
 
     def route_cam(self) -> None:
         """
@@ -89,10 +95,16 @@ class Importer(IMPORTER):
         """
 
         _, image = self.capture.read()
-
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        if image is not None:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        else:
+            raise ValueError("No more frames.")
+            return
 
         self.proceed(image)
 
     def release(self) -> None:
+        if self.capture is not None:
+            self.capture.release()
+
         self.route_frame = lambda _: None

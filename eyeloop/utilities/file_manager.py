@@ -38,5 +38,10 @@ class File_Manager:
         Reads video sequence from the input folderpath.
         Command-line argument -v [dir] sets this vid_path.
         """
-        img_pth = Path(self.input_folderpath, f"pic{frame}.jpg")
-        return np.array(cv2.imread(str(img_pth)))
+        img_pth = Path(self.input_folderpath, f"frame_{frame}.jpg")
+        image=cv2.imread(str(img_pth))
+
+        if image is None:
+            raise ValueError("No more frames.")
+
+        return np.array(image)

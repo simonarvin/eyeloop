@@ -33,6 +33,10 @@ class GUI:
         x = x % self.width
         self.cursor = (x, y)
 
+    def release(self):
+        self.out.release()
+        cv2.destroyAllWindows()
+
     def remove_mousecallback(self) -> None:
         cv2.setMouseCallback("CONFIGURATION", lambda *args: None)
         cv2.setMouseCallback("Tool tip", lambda *args: None)

@@ -12,6 +12,7 @@ class IMPORTER:
         self.scale = config.arguments.scale
         self.frame = 0
         self.vid_path = config.arguments.video
+        self.capture = None
 
     def arm(self, width, height, image):
 
