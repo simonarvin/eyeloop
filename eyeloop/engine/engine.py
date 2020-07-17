@@ -34,6 +34,7 @@ class Engine:
         self.mean = -1  # Used for infering blinking.
 
         max_cr_processor = 3
+        self.cr_log_stock = [-1] * max_cr_processor
         self.cr_processors = [Shape(type=2) for _ in range(max_cr_processor)]
         self.pupil_processor = Shape()
 
@@ -89,12 +90,8 @@ class Engine:
             "time": timestamp,
             "frame": config.importer.frame,
             "blink": -1,
-            "cr_dim": -1,
-            "cr_cen": -1,
-            "cr_ang": -1,
-            "pupil_dim": -1,
-            "pupil_cen": -1,
-            "pupil_ang": -1
+            "cr": -1,
+            "pupil": -1,
         }
 
         config.graphical_user_interface.update_record(self.source)
@@ -106,7 +103,7 @@ class Engine:
         self.norm_cr_artefact = int(6 * self.norm)
 
         self.mean = np.mean(image)
-        self.blink_threshold = 25.5*np.log(np.var(image)) - 182 #0.046 * np.var(image) - 68.11
+        self.blink_threshold = 25.1*np.log(np.var(image)) - 182 #0.046 * np.var(image) - 68.11
 
         self.base_mean = -1
         self.blink = 0
@@ -158,6 +155,7 @@ class Engine:
         timestamp = time.time()
         cr_width = cr_height = cr_center = cr_angle = pupil_center = pupil_width = pupil_height = pupil_angle = -1
         blink = 0
+        cr_log=self.cr_log_stock.copy()
 
         if self.check_blink():
             try:
@@ -169,13 +167,14 @@ class Engine:
                     cv2.GaussianBlur(self.pupil_source, (self.pupil_processor.blur, self.pupil_processor.blur), 0),
                     60 + self.pupil_processor.binarythreshold, 255, cv2.THRESH_BINARY_INV)
 
-            for cr_processor in self.cr_processors:
+            for i, cr_processor in enumerate(self.cr_processors):
                 if cr_processor.active:
                     cr_processor.refresh_source(self.source)
                     try:
                         if cr_processor.track():
                             self.cr_artifacts(cr_processor, offsetx, offsety, pupil_area)
                             cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
+                            cr_log[i] = ((cr_width, cr_height), cr_center, cr_angle)
                     except:
                         pass #for now, let's pass any errors arising from Shape().track() - this caused EyeLoop to crash when cr_processor.track() failed.
 
@@ -203,12 +202,8 @@ class Engine:
             "time": timestamp,
             "frame": config.importer.frame,
             "blink": blink,
-            "cr_dim": (cr_width, cr_height),
-            "cr_cen": cr_center,
-            "cr_ang": cr_angle,
-            "pupil_dim": (pupil_width, pupil_height),
-            "pupil_cen": pupil_center,
-            "pupil_ang": pupil_angle
+            "cr": cr_log,
+            "pupil": ((pupil_width, pupil_height), pupil_center, pupil_angle),
         }
 
         self.run_extractors()
