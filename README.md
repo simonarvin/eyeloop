@@ -187,6 +187,17 @@ The default graphical user interface in EyeLoop is [*minimum-gui*.](https://gith
 
 > EyeLoop is compatible with custom graphical user interfaces through its modular logic. [Click here](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/guis/README.md) for instructions on how to build your own.
 
+## Running unit tests ##
+
+Install testing requirements by running in a terminal:
+
+`pip install -r requirements_testing.txt`
+
+Then run tox: `tox`
+
+Reports and results will be outputted to `/tests/reports`
+
+
 ## Known issues ##
 - [ ] Respawning/freezing windows when running *minimum-gui* in Ubuntu.
 

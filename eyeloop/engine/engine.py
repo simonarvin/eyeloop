@@ -1,4 +1,6 @@
+import logging
 import time
+from typing import Optional
 
 import cv2
 
@@ -6,6 +8,8 @@ import eyeloop.config as config
 from eyeloop.constants.engine_constants import *
 from eyeloop.engine.processor import Shape
 from eyeloop.utilities.general_operations import to_int, tuple_int
+
+logger = logging.getLogger(__name__)
 
 
 class Engine:
@@ -21,6 +25,7 @@ class Engine:
         else:  # Enables markers to remove artifacts. -m 1
             self.place_markers = self.real_place_markers
         self.marks = []
+        self.blink: Optional[int] = None
 
         if config.arguments.tracking == 0:  # Recording mode. --tracking 0
             self.iterate = self.record
@@ -103,7 +108,8 @@ class Engine:
         self.norm_cr_artefact = int(6 * self.norm)
 
         self.mean = np.mean(image)
-        self.blink_threshold = 25.1*np.log(np.var(image)) - 182 #0.046 * np.var(image) - 68.11
+        # self.blink_threshold = 25.1 * np.log(np.var(image)) - 182  # 0.046 * np.var(image) - 68.11
+        self.blink_threshold = 0.046 * np.var(image) - 58
 
         self.base_mean = -1
         self.blink = 0
@@ -119,28 +125,35 @@ class Engine:
         for cr_processor in self.cr_processors:
             cr_processor.binarythreshold = float(np.min(self.source)) * .7
 
-    def check_blink(self, threshold=5) -> bool:
+    def check_blink(self, threshold: Optional[float] = None) -> bool:
         """
         Analyzes the monochromatic distribution of the frame,
         to infer blinking. Change in mean during blinking is very distinct.
+        :returns: True if blink detected, False otherwise
         """
-
+        # TODO calculate threshold using another method?
+        if threshold is None:
+            threshold = self.blink_threshold
+            # print(f"threshold = {threshold}")
         mean = np.mean(self.source)
         delta = self.mean - mean
         self.mean = mean
 
-        #    print("delta", delta)
-        if abs(delta) > self.blink_threshold:
-            self.blink = 10
-            print("blink!")
-            return False
+        if threshold < 0:
+            raise ValueError(f"check_blink() threshold must be greater than 0! Threshold was {threshold}")
+
+        # print(f"blink delta = {abs(delta)}")
+        if abs(delta) > threshold:
+            self.blink = 10  # TODO does this parameter mean a blink lasts for 10 frames? Should this be here?
+            print("blink detected!")
+            return True
         elif self.blink != 0:
 
             self.blink -= 1
+            return True
+        else:
+            self.blink = 0
             return False
-        self.blink = 0
-
-        return True
 
     def track(self) -> None:
         """
@@ -154,10 +167,11 @@ class Engine:
 
         timestamp = time.time()
         cr_width = cr_height = cr_center = cr_angle = pupil_center = pupil_width = pupil_height = pupil_angle = -1
-        blink = 0
-        cr_log=self.cr_log_stock.copy()
 
-        if self.check_blink():
+        cr_log = self.cr_log_stock.copy()
+
+        if self.check_blink() is False:
+            blink = 0
             try:
                 pupil_area = self.pupil_processor.area
                 offsetx, offsety = -self.pupil_processor.corners[0]
@@ -176,7 +190,7 @@ class Engine:
                             cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
                             cr_log[i] = ((cr_width, cr_height), cr_center, cr_angle)
                     except:
-                        pass #for now, let's pass any errors arising from Shape().track() - this caused EyeLoop to crash when cr_processor.track() failed.
+                        pass  # for now, let's pass any errors arising from Shape().track() - this caused EyeLoop to crash when cr_processor.track() failed.
 
             self.refresh_pupil(self.pupil_source)  # lambda _: None when pupil not selected in gui.
             self.place_markers()  # lambda: None when markerless (-m 0).
@@ -188,13 +202,13 @@ class Engine:
 
         else:
             blink = 1
+
         self.blink_i = blink
 
         try:
             config.graphical_user_interface.update_track(blink)
         except Exception as e:
-            print("Error! Did you assign the graphical user interface (GUI) correctly?")
-            print("Error message: ", e)
+            logger.exception("Did you assign the graphical user interface (GUI) correctly? Attempting to release()")
             self.release()
             return
 
@@ -217,8 +231,8 @@ class Engine:
         for extractor in self.extractors:
             try:
                 extractor.activate()
-            except:
-                pass
+            except AttributeError:
+                logger.warning(f"Extractor {extractor} has no activate() method")
 
     def release(self) -> None:
         """
@@ -231,14 +245,10 @@ class Engine:
         for extractor in self.extractors:
             try:
                 extractor.release()
-            except:
-                pass
+            except AttributeError:
+                logger.warning(f"Extractor {extractor} has no release() method")
 
-        try:
-            config.importer.release()
-        except:
-            pass
-
+        config.importer.release()
 
     def update_feed(self, img) -> None:
 

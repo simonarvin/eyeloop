@@ -1,11 +1,15 @@
 language: python
+
 python:
   - "3.8"
 
+before_install:
+  - "pip install -U pip"
+  - "python setup.py install"
 install:
-  - pip install -e .
+  - pip install pytest pandas
 dist: xenial
 services:
   - xvfb
 
-script: eyeloop --video 'misc/travis-sample/Frmd7.m4v'
+script: pytest

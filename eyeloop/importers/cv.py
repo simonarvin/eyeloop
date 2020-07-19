@@ -1,15 +1,20 @@
+import logging
 from pathlib import Path
+from typing import Optional, Callable
 
 import cv2
 
 import eyeloop.config as config
 from eyeloop.importers.importer import IMPORTER
 
+logger = logging.getLogger(__name__)
+
 
 class Importer(IMPORTER):
 
     def __init__(self) -> None:
         super().__init__()
+        self.route_frame: Optional[Callable] = None  # Dynamically assigned at runtime depending on input type
 
     def first_frame(self) -> None:
         self.vid_path = Path(config.arguments.video)
@@ -31,7 +36,9 @@ class Importer(IMPORTER):
                 except:
                     image = image[..., 0]
             else:
-                raise ValueError("Failed to initialize video stream.\nMake sure that the video path is correct, or that your webcam is plugged in and compatible with opencv.")
+                raise ValueError(
+                    "Failed to initialize video stream.\n"
+                    "Make sure that the video path is correct, or that your webcam is plugged in and compatible with opencv.")
 
         elif self.vid_path.is_dir():
 
@@ -45,7 +52,8 @@ class Importer(IMPORTER):
                 height, width, _ = image.shape
                 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
                 self.route_frame = self.route_sequence_sing
-            except:  # TODO fix bare except
+            except Exception:  # TODO fix bare except
+                logger.exception("first_frame() error: ")
                 height, width = image.shape
                 self.route_frame = self.route_sequence_flat
 
@@ -57,14 +65,9 @@ class Importer(IMPORTER):
     def route(self) -> None:
         self.first_frame()
         while True:
-            try:
+            if self.route_frame is not None:
                 self.route_frame()
-            except ValueError:
-                config.engine.release()
-                print("Importer released (1).")
-                break
-            except TypeError:
-                print("Importer released (2).")
+            else:
                 break
 
     def proceed(self, image) -> None:
@@ -86,7 +89,6 @@ class Importer(IMPORTER):
 
         self.proceed(image)
 
-
     def route_cam(self) -> None:
         """
         Routes the capture frame to:
@@ -97,14 +99,15 @@ class Importer(IMPORTER):
         _, image = self.capture.read()
         if image is not None:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            self.proceed(image)
         else:
-            raise ValueError("No more frames.")
-            return
-
-        self.proceed(image)
+            logger.info("No more frames to process, exiting.")
+            self.release()
 
     def release(self) -> None:
+        logger.debug(f"cv.Importer.release() called")
         if self.capture is not None:
             self.capture.release()
 
-        self.route_frame = lambda _: None
+        self.route_frame = None
+        cv2.destroyAllWindows()

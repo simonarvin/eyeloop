@@ -10,8 +10,21 @@ class Arguments:
     Parses all command-line arguments and config.pupt parameters.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, args) -> None:
+        self.config = None
+        self.markers = None
+        self.video = None
+        self.output_dir = None
+        self.importer = None
+        self.scale = None
+        self.tracking = None
+        self.model = None
 
+        self.parsed_args = self.parse_args(args)
+        self.build_config(parsed_args=self.parsed_args)
+
+    @staticmethod
+    def parse_args(args):
         parser = argparse.ArgumentParser(description='Help list')
         parser.add_argument("-v", "--video", default="0", type=str,
                             help="Input a video sequence for offline processing.")
@@ -29,25 +42,24 @@ class Arguments:
         parser.add_argument("-tr", "--tracking", default=1, type=int,
                             help="Enable/disable tracking (1/enabled: default).")
 
-        args = parser.parse_args()
+        return parser.parse_args(args)
 
-        self.config = args.config
+    def build_config(self, parsed_args):
+        self.config = parsed_args.config
 
         if self.config != "0":  # config file was set.
             self.parse_config(self.config)
 
-        self.markers = args.markers
-        self.video = Path(args.video.strip("\'\"")).absolute()  # Handle quotes used in argument
-        self.output_dir = Path(args.output_dir.strip("\'\"")).absolute()
-        self.importer = args.importer.lower()
-        self.scale = args.scale
-        self.tracking = args.tracking
-        self.model = args.model.lower()
+        self.markers = parsed_args.markers
+        self.video = Path(parsed_args.video.strip("\'\"")).absolute()  # Handle quotes used in argument
+        self.output_dir = Path(parsed_args.output_dir.strip("\'\"")).absolute()
+        self.importer = parsed_args.importer.lower()
+        self.scale = parsed_args.scale
+        self.tracking = parsed_args.tracking
+        self.model = parsed_args.model.lower()
 
     def parse_config(self, config: str) -> None:
-
-        try:
-            content = open(config, "r")
+        with open(config, "r") as content:
             print("Loading config preset: ", config)
             for line in content:
                 split = line.split("=")
@@ -76,7 +88,3 @@ class Arguments:
                     print("Markers preset: ", parameter)
                     self.markers = parameter
             print("")
-
-        except Exception as e:
-            print("Error opening .pupt config preset.")
-            print(e)

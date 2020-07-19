@@ -1,17 +1,23 @@
-from eyeloop.engine.engine import Engine
-
-from eyeloop.utilities.format_print import welcome
-from eyeloop.utilities.argument_parser import Arguments
-from eyeloop.utilities.file_manager import File_Manager
-
-from eyeloop.extractors.DAQ import DAQ_extractor
-from eyeloop.extractors.frametimer import FPS_extractor
-
-from eyeloop.guis.minimum.minimum_gui import GUI
+import importlib
+import logging
+import sys
+from pathlib import Path
 
 import eyeloop.config as config
+from eyeloop.engine.engine import Engine
+from eyeloop.extractors.DAQ import DAQ_extractor
+from eyeloop.extractors.frametimer import FPS_extractor
+from eyeloop.guis.minimum.minimum_gui import GUI
+from eyeloop.utilities.argument_parser import Arguments
+from eyeloop.utilities.file_manager import File_Manager
+from eyeloop.utilities.format_print import welcome
+from eyeloop.utilities.shared_logging import setup_logging
 
-import sys
+EYELOOP_DIR = Path(__file__).parent
+PROJECT_DIR = EYELOOP_DIR.parent
+
+logger = logging.getLogger(__name__)
+
 
 class EyeLoop:
     """
@@ -20,12 +26,14 @@ class EyeLoop:
     Git: https://github.com/simonarvin/eyeloop
     """
 
-    def __init__(self):
+    def __init__(self, args, logger=None):
 
         welcome("Server")
 
-        config.arguments = Arguments()
+        config.arguments = Arguments(args)
         config.file_manager = File_Manager(output_root=config.arguments.output_dir)
+        if logger is None:
+            logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
 
         config.graphical_user_interface = GUI()
 
@@ -38,18 +46,16 @@ class EyeLoop:
         config.engine.load_extractors(extractors)
 
         try:
-            print("Initiating tracking via {}".format(config.arguments.importer))
-            import_command = "from eyeloop.importers.{} import Importer".format(config.arguments.importer)
+            logger.info(f"Initiating tracking via Importer: {config.arguments.importer}")
+            importer_module = importlib.import_module(f"eyeloop.importers.{config.arguments.importer}")
+            config.importer = importer_module.Importer()
+            config.importer.route()
 
-            exec(import_command, globals())
+            # exec(import_command, globals())
 
-        except Exception as e:
-            print("Invalid importer selected.\n", e)
-
-        config.importer = Importer()
-        config.importer.route()
-        sys.exit(0)
+        except ImportError:
+            logger.exception("Invalid importer selected")
 
 
 if __name__ == '__main__':
-    EyeLoop()
+    EyeLoop(sys.argv[1:], logger=None)

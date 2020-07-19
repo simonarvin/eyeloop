@@ -1,0 +1,5 @@
+pytest
+tox
+pandas
+pytest-html
+pytest-cov

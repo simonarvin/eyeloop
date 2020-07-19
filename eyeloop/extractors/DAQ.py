@@ -1,22 +1,20 @@
 import json
-import time
+import logging
+from pathlib import Path
 
 
 class DAQ_extractor:
-    def __init__(self, dir):
-        self.dir = dir
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        filename = "{}/log{}.json".format(dir, timestamp)
-        self.log = open(filename, 'w')
+    def __init__(self, output_dir):
+        self.output_dir = output_dir
+        self.datalog_path = Path(output_dir, f"datalog.json")
 
     def fetch(self, engine):
-        try:
-            self.log.write(json.dumps(engine.dataout) + "\n")
-        except:
-            pass
+        with open(self.datalog_path, "a") as datalog:
+            datalog.write(json.dumps(engine.dataout) + "\n")
 
     def release(self):
-        self.log.close()
+        logging.debug("DAQ_extractor.release() called")
+        pass
 
     # def set_digital_line(channel, value):
     # digital_output = PyDAQmx.Task()
