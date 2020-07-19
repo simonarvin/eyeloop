@@ -8,9 +8,9 @@ before_install:
   - "pip install -U pip"
   - "python setup.py install"
 install:
-  - pip install pytest pandas pytest-html pytest-cov
+  - pip install pytest pandas
 dist: xenial
 services:
   - xvfb
 
-script: pytest --cov=eyeloop --cov-report html:tests/reports/coverage --html=tests/reports/pytest_results.html
+script: pytest
