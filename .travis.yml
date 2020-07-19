@@ -4,10 +4,13 @@ python:
   - "3.7"
 
 cache: false
+before_install:
+  - "pip install -U pip"
+  - "python setup.py install"
 install:
-  - travis_retry pip install tox-travis
+  - pip install pytest pandas pytest-html pytest-cov
 dist: xenial
 services:
   - xvfb
 
-script: tox
+script: pytest --cov=eyeloop --cov-report html:tests/reports/coverage --html=tests/reports/pytest_results.html
