@@ -1,12 +1,11 @@
 language: python
 
-matrix:
-  include:
-    - python: 3.8
+python:
+  - "3.7"
 
+cache: false
 install:
-  - pip install tox
-
+  - travis_retry pip install tox-travis
 dist: xenial
 services:
   - xvfb
