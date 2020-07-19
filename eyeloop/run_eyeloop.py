@@ -26,13 +26,14 @@ class EyeLoop:
     Git: https://github.com/simonarvin/eyeloop
     """
 
-    def __init__(self, args):
+    def __init__(self, args, logger=None):
 
         welcome("Server")
 
         config.arguments = Arguments(args)
         config.file_manager = File_Manager(output_root=config.arguments.output_dir)
-        logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
+        if logger is None:
+            logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
 
         config.graphical_user_interface = GUI()
 
@@ -57,4 +58,4 @@ class EyeLoop:
 
 
 if __name__ == '__main__':
-    EyeLoop(sys.argv[1:])
+    EyeLoop(sys.argv[1:], logger=None)
