@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup, find_namespace_packages
+from setuptools import setup, find_packages
 
 install_requires = []
 
@@ -27,7 +27,7 @@ setup(
             'eyeloop=eyeloop.run_eyeloop:__main__'
         ]
     },
-    packages=find_namespace_packages(include=["eyeloop.*"]),
+    packages=find_packages(include=["eyeloop.*"]),
     install_requires=install_requires,
     project_urls={
         "Documentation": "https://github.com/simonarvin/eyeloop",
