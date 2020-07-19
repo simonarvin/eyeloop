@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
-
+from setuptools import setup, find_namespace_packages
 
 install_requires = []
 
@@ -10,7 +9,6 @@ with open('requirements.txt') as f:
         if not req or req.startswith('#') or '://' in req:
             continue
         install_requires.append(req)
-
 
 setup(
     name='eyeloop',
@@ -29,7 +27,7 @@ setup(
             'eyeloop=eyeloop.run_eyeloop:EyeLoop'
         ]
     },
-    packages=find_packages(include=["eyeloop.*"]),
+    packages=find_namespace_packages(include=["eyeloop.*"]),
     install_requires=install_requires,
     project_urls={
         "Documentation": "https://github.com/simonarvin/eyeloop",
