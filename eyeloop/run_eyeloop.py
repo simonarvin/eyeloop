@@ -27,10 +27,12 @@ class EyeLoop:
     """
 
     def __init__(self, args):
+
         welcome("Server")
 
         config.arguments = Arguments(args)
         config.file_manager = File_Manager(output_root=config.arguments.output_dir)
+        logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
 
         config.graphical_user_interface = GUI()
 
@@ -55,5 +57,4 @@ class EyeLoop:
 
 
 if __name__ == '__main__':
-    logger, logger_filename = setup_logging(log_dir=PROJECT_DIR / "logs", module_name="run_eyeloop")
     EyeLoop(sys.argv[1:])

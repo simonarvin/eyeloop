@@ -1,10 +1,8 @@
 import argparse
-import logging
 from pathlib import Path
 
 EYELOOP_DIR = Path(__file__).parent.parent
 PROJECT_DIR = EYELOOP_DIR.parent
-logger = logging.getLogger(__name__)
 
 
 class Arguments:
@@ -47,7 +45,6 @@ class Arguments:
         return parser.parse_args(args)
 
     def build_config(self, parsed_args):
-        logger.debug(f"Parsed args: {parsed_args}")
         self.config = parsed_args.config
 
         if self.config != "0":  # config file was set.
@@ -62,9 +59,7 @@ class Arguments:
         self.model = parsed_args.model.lower()
 
     def parse_config(self, config: str) -> None:
-
-        try:
-            content = open(config, "r")
+        with open(config, "r") as content:
             print("Loading config preset: ", config)
             for line in content:
                 split = line.split("=")
@@ -93,6 +88,3 @@ class Arguments:
                     print("Markers preset: ", parameter)
                     self.markers = parameter
             print("")
-
-        except Exception as e:
-            logger.exception("Error opening .pupt config preset")
