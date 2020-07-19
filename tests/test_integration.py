@@ -2,7 +2,6 @@
 import json
 import logging
 from pathlib import Path
-from typing import Dict
 
 import pandas as pd
 import pytest
@@ -43,7 +42,6 @@ class TestIntegration:
                     "--output_dir", str(tmpdir)]
         eyeloop_obj = run_eyeloop.EyeLoop(args=testargs, logger=logger)
 
-
         # Ensure output is expected
         data_dir = list(Path(tmpdir).glob("trial_*"))[0]
         vid_frames = list(Path(data_dir).glob("frame_*.jpg"))
@@ -55,10 +53,11 @@ class TestIntegration:
         assert Path(data_dir, "output.avi").exists()
         # TODO add assertions based on blink, cr and pupil values
 
-
     def test_no_video_stream_error(self):
         with pytest.raises(ValueError) as excinfo:
             run_eyeloop.EyeLoop(args=[])
         assert "Failed to initialize video stream" in str(excinfo.value)
 
 # Tests for each importer
+
+# TODO Add tests that use that animal tag of the videos
