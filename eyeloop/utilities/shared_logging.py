@@ -1,34 +1,29 @@
 import logging
 import logging.config
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
 import yaml
 
 
-def setup_logging(log_config_path=f"{Path(__file__).parent}/logging_config.yaml", log_dir="logs", module_name=None,
-                  default_level=logging.INFO) -> (logging.Logger, str):
+def setup_logging(log_config_path=f"{Path(__file__).parent}/logging_config.yaml", log_dir="logs", module_name=None) -> \
+        (logging.Logger, str):
     """
     Setup logging configuration. Returns logger object.
 
     :param log_config_path: Path to logging config yaml file
     :param log_dir: Directory that log files will be written into (relative or full path)
     :param module_name: Module name to append to log filename. If none given __name__ will be used.
-    :param default_level: Default level of logging.
     :returns: Tuple of (the newly created logging object, path to log file (possibly None if no config was found))
     """
     log_filename = None
 
     # Check for permissions and change log dir if write access isn't granted
-    try:
-        if Path(log_dir).exists() is False:
-            print(f"log dir not found, Attempting to create dir {log_dir}")
-            Path(log_dir).mkdir(parents=True, exist_ok=True)
-    except PermissionError:
-        log_dir = Path("C:/Temp", "coronaSEIR", "logs")
-        print(f"WARNING: Not enough permissions to write to log_dir given. Writing to {log_dir} instead.")
+
+    if Path(log_dir).exists() is False:
+        print(f"log dir not found, Attempting to create dir {log_dir}")
+        Path(log_dir).mkdir(parents=True, exist_ok=True)
 
     print(f"Writing log to {Path(log_dir).absolute()}")
 
@@ -52,14 +47,4 @@ def setup_logging(log_config_path=f"{Path(__file__).parent}/logging_config.yaml"
 
     new_logger = logging.getLogger(module_name)
 
-    # # Catch all unhandled exceptions and log
-    # def handle_exception(exc_type, exc_value, exc_traceback):
-    #     if issubclass(exc_type, KeyboardInterrupt):
-    #         sys.__excepthook__(exc_type, exc_value, exc_traceback)
-    #         return
-    #
-    #     new_logger.error("Uncaught exception! Traceback shown below:", exc_info=(exc_type, exc_value, exc_traceback))
-    #     raise exc_type(exc_value)
-
-    # sys.excepthook = handle_exception
     return new_logger, log_filename
