@@ -3,6 +3,7 @@ python:
   - "3.8"
 
 install:
+  - pip install tox
   - pip install -e .
 dist: xenial
 services:
