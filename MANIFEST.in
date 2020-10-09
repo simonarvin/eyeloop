@@ -1,1 +1,4 @@
 include requirements.txt requirements_testing.txt tox.ini
+recursive-include eyeloop/guis/minimum/graphics *.svg *.png
+include eyeloop/utilities/logging_config.yaml
+

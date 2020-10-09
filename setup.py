@@ -28,6 +28,7 @@ setup(
         ]
     },
     packages=find_packages(include=["eyeloop*"]),
+    include_package_data=True,
     install_requires=install_requires,
     project_urls={
         "Documentation": "https://github.com/simonarvin/eyeloop",
