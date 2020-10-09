@@ -57,5 +57,9 @@ class EyeLoop:
             logger.exception("Invalid importer selected")
 
 
-if __name__ == '__main__':
+def main():
     EyeLoop(sys.argv[1:], logger=None)
+
+
+if __name__ == '__main__':
+    main()

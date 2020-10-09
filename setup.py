@@ -24,7 +24,7 @@ setup(
     version='0.1',
     entry_points={
         'console_scripts': [
-            'eyeloop=eyeloop.run_eyeloop:__main__'
+            'eyeloop=eyeloop.run_eyeloop:main'
         ]
     },
     packages=find_packages(include=["eyeloop.*"]),
