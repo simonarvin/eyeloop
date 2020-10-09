@@ -24,10 +24,11 @@ setup(
     version='0.1',
     entry_points={
         'console_scripts': [
-            'eyeloop=eyeloop.run_eyeloop:__main__'
+            'eyeloop=eyeloop.run_eyeloop:main'
         ]
     },
-    packages=find_packages(include=["eyeloop.*"]),
+    packages=find_packages(include=["eyeloop*"]),
+    include_package_data=True,
     install_requires=install_requires,
     project_urls={
         "Documentation": "https://github.com/simonarvin/eyeloop",
