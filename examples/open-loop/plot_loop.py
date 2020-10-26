@@ -1,9 +1,5 @@
-import sys
-
-sys.path.append('../')
-
 import numpy as np
-from utilities.parser import Parser
+from eyeloop.utilities.parser import Parser
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mticker
