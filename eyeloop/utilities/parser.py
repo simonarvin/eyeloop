@@ -19,7 +19,7 @@ class Parser():
         try:
             file = open(file_path, "r")
         except FileNotFoundError:
-            print("Please select a valid log.")
+            raise ValueError("Please select a valid log.")
         self.file_path = file_path
 
         for line in file.readlines():
@@ -59,7 +59,7 @@ class Parser():
         try:
             import pandas as pd
         except:
-            print("Please make sure that pandas is installed (pip install pandas).")
+            raise Exception("Please make sure that pandas is installed (pip install pandas).")
 
         file = pd.read_json(self.file_path, lines=True)
         new_path = self.file_path + "_csv"

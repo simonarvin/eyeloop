@@ -1,19 +1,16 @@
-import sys
-
-sys.path.append('../')
-
 import numpy as np
-from utilities.parser import Parser
+from eyeloop.utilities.parser import Parser
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mticker
 
 
 class Loop_parser(Parser):
-    def __init__(self: Parser):
+    def __init__(self):
+        super().__init__(animal='human')
         self.set_style()
 
-    def custom_lower_panel_ticks(self: Parser, y, pos) -> str:
+    def custom_lower_panel_ticks(self, y, pos) -> str:
         """
         Changes brightness-ticks to 'Dark' and 'Light'.
         """
@@ -23,7 +20,7 @@ class Loop_parser(Parser):
         elif y == 1:
             return "Dark"
 
-    def set_style(self: Parser):
+    def set_style(self):
         """
         Sets the overall style of the plots.
         """
@@ -33,18 +30,18 @@ class Loop_parser(Parser):
         plt.rcParams.update({'font.weight': "regular"})
         plt.rcParams.update({'axes.linewidth': 1})
 
-    def segmentize(self: Parser, key: str) -> np.ndarray:
+    def segmentize(self, key: str) -> np.ndarray:
         """
         Segmentizes the data log based on a key signal, such as a trigger.
         """
 
         segments = []
         for index, entry in enumerate(self.data):
-            if entry[key] == 1:
+            if key in entry and entry[key] == 1:
                 segments.append(index)
         return np.array(segments)
 
-    def plot_open_loop(self: Parser, rows: int = 2, columns: int = 3) -> None:
+    def plot_open_loop(self, rows: int = 2, columns: int = 3) -> None:
         """
         Retrieves and parses the open-loop demo data set.
         """

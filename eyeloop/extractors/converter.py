@@ -80,7 +80,7 @@ class Conversion_extractor:
             width, height = dataout["pw"], dataout["ph"]
             pupil, cornea = dataout["pc"], dataout["crc"]
         except Exception as e:
-            print(e)
+            raise Exception(e)
         try:
             pupil_coordinate = self.to_angular(pupil, cornea)
 
