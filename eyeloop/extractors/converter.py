@@ -5,6 +5,7 @@ class Conversion_extractor:
     def __init__(self, type=1, animal: str = "mouse", angle=0, center=None, interfaces=None):
         self.angle = angle
         self.center = center
+        self.animal = animal
         if animal == "mouse":
             self.effective_rotation_radius = 1.25  # mm mouse
             self.bulbucorneal_distance = 0.2  # mm
@@ -77,10 +78,11 @@ class Conversion_extractor:
             dataout = core
 
         try:
-            width, height = dataout["pw"], dataout["ph"]
-            pupil, cornea = dataout["pc"], dataout["crc"]
+            width, height = dataout["pupil"][0][0], dataout["pupil"][0][1]
+            pupil, cornea = dataout["pupil"][1], dataout["cr"][1]
         except Exception as e:
             raise Exception(e)
+
         try:
             pupil_coordinate = self.to_angular(pupil, cornea)
 
@@ -109,7 +111,7 @@ class Conversion_extractor:
 
         try:
             # print(dataout["pupil_cen"], dataout["cr_cen"])
-            pupil, cornea = dataout["pupil_cen"], dataout["cr_cen"]
+            pupil, cornea = dataout["pupil"][1], dataout["cr"][1]
 
             # pupil = self.rotate(pupil, self.angle, self.center)
             # cornea = self.rotate(cornea, self.angle, self.center)

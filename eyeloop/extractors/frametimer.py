@@ -10,6 +10,9 @@ class FPS_extractor:
         self.max_iter = max_iter
         self.reset()
 
+    def activate(self):
+        return
+
     def reset(self):
         self.iteration = 0
         self.start = time.time()
@@ -21,3 +24,6 @@ class FPS_extractor:
 
             print("    Currently processing {} frames per second.".format(int(framerate)))
             self.reset()
+
+    def release(self):
+        return

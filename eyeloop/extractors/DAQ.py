@@ -8,13 +8,16 @@ class DAQ_extractor:
         self.output_dir = output_dir
         self.datalog_path = Path(output_dir, f"datalog.json")
 
+    def activate(self):
+        return
+
     def fetch(self, engine):
         with open(self.datalog_path, "a") as datalog:
             datalog.write(json.dumps(engine.dataout) + "\n")
 
     def release(self):
-        logging.debug("DAQ_extractor.release() called")
-        pass
+        return
+        #logging.debug("DAQ_extractor.release() called")
 
     # def set_digital_line(channel, value):
     # digital_output = PyDAQmx.Task()
