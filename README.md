@@ -65,8 +65,11 @@ You may want to use a Conda or Python virtual environment when
 installing `eyeloop`, to avoid mixing up with your system dependencies.
 
 >Using pip and a virtual environment:
+
 > ```python -m venv venv```
+
 > ```source venv/bin/activate```
+
 > ```(venv) pip install .```
 
 Alternatively:
