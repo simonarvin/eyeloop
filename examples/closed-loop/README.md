@@ -10,7 +10,7 @@ One of EyeLoop’s most appealing applications is closed-loop experiments (Fig).
 The brightness formula contains four critical variables (Fig B): The rate of change, I, which is dependent on the pupil area, and its scalar, q. The velocity, v, which applies the rate of change to monitor brightness, and, the velocity friction, f, which decays the velocity towards zero. Interestingly, by varying these parameters, we observe behaviors characteristic of dynamical systems: For the reference and the slow decay trials, we find emergent limit-cycle oscillations (Fig C). This dynamic is dramatically impaired by a small scalar, and abolished in the low rate trial. These findings illustrate how a simple closed-loop experiment may generate self-sustaining dynamics emerging from the eyes engaging with the system, and the system engaging with the eyes.
 
 ## How to reproduce ##
-In *eyeloop.py*, import the closed-loop *Extractor* module and the *calibrator*:
+In *run_eyeloop.py*, import the closed-loop *Extractor* module and the *calibrator*:
 ```python
 from eyeloop.extractors.closed_loop import ClosedLoop_Extractor
 from eyeloop.extractors.calibration import Calibration_Extractor
