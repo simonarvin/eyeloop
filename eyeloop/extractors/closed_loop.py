@@ -5,9 +5,9 @@ import numpy as np
 
 
 class ClosedLoop_Extractor:
-    def __init__(self, MAXSIZE=3231, x=-0, y=0, w=100, h=100):
+    def __init__(self, MAXSIZE = 3231, x=-0, y=0, w=100, h=100):
         """
-        RUN CALIBRATE, THEN SET MAXSIZE ACCORDINGLY
+        RUN CALIBRATE, THEN SET MAXSIZE (= ._cal_ file value)
         """
 
         self.basesize = MAXSIZE / 2
@@ -179,7 +179,7 @@ class ClosedLoop_Extractor:
         cv2.destroyAllWindows()
 
     def r_fetch(self, core):
-        w, h = core.dataout["pw"], core.dataout["ph"]
+        w, h = core.dataout["pupil"][0]
         size = float(w * h)
 
         if self.state == 2:
@@ -208,7 +208,7 @@ class ClosedLoop_Extractor:
             self.index += 1
             core.dataout["trigger"] = 1
             if self.index == len(self.protocol):
-                print("Protocol finished. Terminating Puptrack..")
+                print("Protocol finished. Terminating EyeLoop..")
                 core.release()
                 return
             else:

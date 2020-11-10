@@ -89,14 +89,17 @@ class Open_Loop_extractor():
         self.fetch = self.r_fetch
         self.change_parameters(self.protocol[self.index])
 
-    def timer(self) -> float:
-        return time.time() - self.step_start
+    def timer(self, time) -> float:
+        return time - self.step_start
 
-    def condition(self, step) -> bool:
+    def condition(self, step, time) -> bool:
         cond = not (0 < self.current < step["t"])
         if cond:
-            self.step_start = time.time()
+            self.step_start = time #time.time()
         return cond
+
+    def release(self):
+        return
 
     def change_parameters(self, step) -> None:
         self.state = step["s"]
@@ -129,8 +132,9 @@ class Open_Loop_extractor():
         engine.dataout["open_looptest"] = source[0][0]
         engine.dataout["open_loopparam"] = step
 
-        self.current = self.timer()
-        if self.condition(step):
+        self.current = self.timer(engine.dataout["time"])
+
+        if self.condition(step,engine.dataout["time"]):
             self.index += 1
             engine.dataout["trigger"] = 1
             if self.index == len(self.protocol):
