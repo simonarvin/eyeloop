@@ -12,8 +12,8 @@ The brightness formula contains four critical variables (Fig B): The rate of cha
 ## How to reproduce ##
 In *eyeloop.py*, import the closed-loop *Extractor* module and the *calibrator*:
 ```python
-from examples.closed-loop.closed_loop import ClosedLoop_Extractor
-from examples.closed-loop.calibration import Calibration_Extractor
+from eyeloop.extractors.closed_loop import ClosedLoop_Extractor
+from eyeloop.extractors.calibration import Calibration_Extractor
 ```
 
 First, load the *calibrator*:
@@ -27,20 +27,26 @@ ENGINE.load_extractors(Calibration_Extractor())
 
 Position a PC monitor in front of the eye of the subject, turn off the lights and run the experiment.
 ```
-python eyeloop.py
+eyeloop
 ```
 
-> Note: Adjust the width, height and x, y coordinates of the visual stimulus to fit your setup.
+> Note: Adjust the width, height and x, y coordinates of the visual stimulus (inside calibration.py, closed_loop.py to fit your setup.
 
-This returns a calibration value (let's call it ```__CAL__```). Now, load the closed-loop *Extractor* and pass this value ```__CAL__``` as the first parameter:
+This returns a calibration value (saved in file format ```{time_stamp}._cal_```). Now, load the closed-loop *Extractor* and paste this value inside ```{time_stamp}._cal_``` as the first parameter:
 ```python
-ENGINE.load_extractors(Calibration_Extractor(__CAL__))
+ENGINE.load_extractors(ClosedLoop_Extractor(_CAL_))
+```
+
+For example,
+
+```python
+ENGINE.load_extractors(ClosedLoop_Extractor(794.58))
 ```
 
 That's it! Enjoy your experiment.
 
 ```
-python eyeloop.py
+eyeloop
 ```
 
-> Note: If you're using a Vimba-based camera, use command ```python eyeloop.py --importer vimba```
+> Note: If you're using a Vimba-based camera, use command ```eyeloop --importer vimba```
