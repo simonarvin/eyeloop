@@ -1,4 +1,4 @@
-opencv-contrib-python>=4.2.*
+opencv-python-headless>=4.2.*
 pymba==0.3.*
 numpy==1.19.*
 PyYaml

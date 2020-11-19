@@ -41,7 +41,7 @@ class Arguments:
                             help="Enable/disable artifact removing markers (0: disable/default; 1: enable)")
         parser.add_argument("-tr", "--tracking", default=1, type=int,
                             help="Enable/disable tracking (1/enabled: default).")
-        parser.add_argument("-bt", "--bthreshold", default=0, type=int,
+        parser.add_argument("-bt", "--bthreshold", default=-1, type=float,
                             help="Set blink threshold manually (0-255).")
 
         return parser.parse_args(args)
