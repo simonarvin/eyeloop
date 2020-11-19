@@ -20,6 +20,8 @@ class Engine:
         self.eyeloop = eyeloop
         self.model = config.arguments.model  # Used for assigning appropriate circular model.
 
+        self.blink_threshold = config.arguments.bthreshold
+
         if config.arguments.markers == False:  # Markerless. -m 0 (default)
             self.place_markers = lambda: None
         else:  # Enables markers to remove artifacts. -m 1
@@ -109,7 +111,8 @@ class Engine:
 
         self.mean = np.mean(image)
         # self.blink_threshold = 25.1 * np.log(np.var(image)) - 182  # 0.046 * np.var(image) - 68.11
-        self.blink_threshold = 0.046 * np.var(image) - 58
+        if self.blink_threshold == 0:
+            self.blink_threshold = 0.046 * np.var(image) - 58
 
         self.base_mean = -1
         self.blink = 0
@@ -135,6 +138,7 @@ class Engine:
         if threshold is None:
             threshold = self.blink_threshold
             # print(f"threshold = {threshold}")
+
         mean = np.mean(self.source)
         delta = self.mean - mean
         self.mean = mean
