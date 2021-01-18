@@ -1,4 +1,4 @@
-version = "0.1-beta"
+version = "0.2-beta"
 importer = 0
 eyeloop = 0
 engine = 0

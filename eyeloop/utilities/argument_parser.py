@@ -44,6 +44,9 @@ class Arguments:
         parser.add_argument("-bt", "--bthreshold", default=-1, type=float,
                             help="Set blink threshold manually (0-255).")
 
+        parser.add_argument("-ex", "--extractors", default="", type=str,
+                            help="Set file-path of extractor Python file. p = start file prompt.")
+
         return parser.parse_args(args)
 
     def build_config(self, parsed_args):
@@ -60,6 +63,7 @@ class Arguments:
         self.tracking = parsed_args.tracking
         self.model = parsed_args.model.lower()
         self.bthreshold = parsed_args.bthreshold
+        self.extractors = parsed_args.extractors
 
     def parse_config(self, config: str) -> None:
         with open(config, "r") as content:
@@ -90,4 +94,7 @@ class Arguments:
                 elif parameter == "markers":
                     print("Markers preset: ", parameter)
                     self.markers = parameter
+                elif parameter == "extractors":
+                    print("Extractors preset: ", parameter)
+                    self.extractors = parameter
             print("")
