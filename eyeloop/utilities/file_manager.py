@@ -15,9 +15,11 @@ class File_Manager:
     - Saves images from camera streams.
     """
 
-    def __init__(self, output_root: Union[Path, str]) -> None:
+    def __init__(self, output_root: Union[Path, str], img_format:str) -> None:
         self.output_root = output_root
         self.input_folderpath = ""
+        self.img_format = img_format
+
 
         self.output_root.mkdir(exist_ok=True, parents=True)
 
@@ -30,7 +32,7 @@ class File_Manager:
         """
         Saves video sequence to new folderpath.
         """
-        img_pth = Path(self.new_folderpath, f"frame_{frame}.jpg")
+        img_pth = Path(self.new_folderpath, self.img_format.replace("$", str(frame), 1))
         cv2.imwrite(str(img_pth), image)
 
     def read_image(self, frame: int) -> np.ndarray:
@@ -38,7 +40,8 @@ class File_Manager:
         Reads video sequence from the input folderpath.
         Command-line argument -v [dir] sets this vid_path.
         """
-        img_pth = Path(self.input_folderpath, f"frame_{frame}.jpg")
+
+        img_pth = Path(self.input_folderpath, self.img_format.replace("$", str(frame), 1))
         image=cv2.imread(str(img_pth))
 
         if image is None:

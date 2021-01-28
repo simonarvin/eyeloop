@@ -47,6 +47,9 @@ class Arguments:
         parser.add_argument("-ex", "--extractors", default="", type=str,
                             help="Set file-path of extractor Python file. p = start file prompt.")
 
+        parser.add_argument("-imgf", "--img_format", default="frame_$.jpg", type=str,
+                            help="Set file-path of extractor Python file. p = start file prompt.")
+
         return parser.parse_args(args)
 
     def build_config(self, parsed_args):
@@ -64,6 +67,7 @@ class Arguments:
         self.model = parsed_args.model.lower()
         self.bthreshold = parsed_args.bthreshold
         self.extractors = parsed_args.extractors
+        self.img_format = parsed_args.img_format
 
     def parse_config(self, config: str) -> None:
         with open(config, "r") as content:
@@ -97,4 +101,7 @@ class Arguments:
                 elif parameter == "extractors":
                     print("Extractors preset: ", parameter)
                     self.extractors = parameter
+                elif parameter == "img_format":
+                    print("img_format preset: ", parameter)
+                    self.img_format = parameter
             print("")

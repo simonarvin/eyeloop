@@ -36,7 +36,7 @@ class EyeLoop:
         welcome("Server")
 
         config.arguments = Arguments(args)
-        config.file_manager = File_Manager(output_root=config.arguments.output_dir)
+        config.file_manager = File_Manager(output_root=config.arguments.output_dir, img_format = config.arguments.img_format)
         if logger is None:
             logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
 
