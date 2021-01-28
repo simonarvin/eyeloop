@@ -1,4 +1,4 @@
-# EyeLoop [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/simonarvin/eyeloop/issues) [![Build Status](https://travis-ci.com/simonarvin/eyeloop.svg?branch=master)](https://travis-ci.com/simonarvin/eyeloop) ![version](https://img.shields.io/badge/version-0.1--beta-brightgreen) ![lab](https://img.shields.io/badge/yonehara-lab-blue) ![beta](https://img.shields.io/badge/-beta-orange)
+# EyeLoop [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/simonarvin/eyeloop/issues) [![Build Status](https://travis-ci.com/simonarvin/eyeloop.svg?branch=master)](https://travis-ci.com/simonarvin/eyeloop) ![version](https://img.shields.io/badge/version-0.2--beta-brightgreen) ![lab](https://img.shields.io/badge/yonehara-lab-blue) ![beta](https://img.shields.io/badge/-beta-orange)
 
 <p align="center">
 <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/logo.svg?raw=true" width = "280">
@@ -124,52 +124,39 @@ eyeloop --help
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/setup.svg?raw=true" align="center" height="250">
 </p>
 
-In EyeLoop, experiments are built by stacking modules. For your first experiment, we'll need a data acquisition class to log the data, and an experiment class to produce a stimulus. Both classes are passed to run_eyeloop.py as an *extractor array*:
+In EyeLoop, experiments are built by stacking modules. By default, EyeLoop imports two base *extractors*, namely a FPS-counter and a data acquisition tool. To add custom extractors, e.g., for experimental purposes, use the argument tag ```--extractors```:
 
-```python
-extractors = [Experiment(), DAQ()]
-ENGINE.load_extractors(extractors)
+```
+eyeloop --extractors [file_path]/p (where p = file prompt)
 ```
 
-Extractors are instantiated at start-up. At every subsequent time-step, the extractor's ```fetch()``` function is called by the engine.
+Inside the *extractor* file, or a composite python file containing several *extractors*, define the list of *extractors* to be added:
+```python
+extractors_add = [extractor1, extractor2, etc]
+```
+
+*Extractors* are instantiated by EyeLoop at start-up. Then, at every subsequent time-step, the *extractor's* ```fetch()``` function is called by the engine.
 ```python
 class Extractor:
     def __init__(self) -> None:
         ...
-    def fetch(self, engine) -> None:
+    def fetch(self, core) -> None:
         ...
 ```
-```fetch()``` gains access to all eye-tracking data in real-time via the engine pointer.
+```fetch()``` gains access to all eye-tracking data in real-time via the *core* pointer.
 
 > [Click here](https://github.com/simonarvin/eyeloop/blob/master/eyeloop/extractors/README.md) for more information on *extractors*.
 
-### Data acquisition class ###
+### Open-loop example ###
 
-For our data acquisition class, we define the directory path for our log using the instantiator:
-```python
-class DAQ:
-    def __init__(self) -> None:
-        self.log_path = ...
-```
-Then, we extract the eye-tracking data via ```fetch()``` and save it in JSON format.
-```python
-    ...
-    def fetch(self, engine) -> None:
-        self.log.write(json.dumps(engine.dataout)+"\n")
-```
-
->Note, EyeLoop includes a standard data-parser utility (*parser.py*), that may be used to convert JSON into CSV. By using *parser.py*, users can easily compute and plot the eye's angular coordinates and the size of the pupil.
-
-### Experiment class ###
-
-For our experiment class, we'll design a simple *open-loop* where the brightness of a PC monitor is linked to the phase of the sine function. We define the sine frequency and phase using the instantiator:
+As an example, we'll here design a simple *open-loop* experiment where the brightness of a PC monitor is linked to the phase of the sine wave function. We create anew python-file, say "*test_ex.py*", and in it define the sine wave frequency and phase using the instantiator:
 ```python
 class Experiment:
     def __init__(self) -> None:
         self.frequency = ...
         self.phase = 0
 ```
-By using ```fetch()```, we shift the phase of the sine function at every time-step, and use this to control the brightness of a cv-render.
+Then, by using ```fetch()```, we shift the phase of the sine wave function at every time-step, and use this to control the brightness of a cv-render.
 ```python
     ...
     def fetch(self, engine) -> None:
@@ -179,10 +166,16 @@ By using ```fetch()```, we shift the phase of the sine function at every time-st
         cv2.imshow("Experiment", brightness)
 ```
 
-That's it! Test your experiment using:
+To add our test extractor to EyeLoop, we'll need to define an extractors_add array:
+```python
+extractors_add = [Experiment()]
 ```
-eyeloop
+
+Finally, we test the experiment by running command:
 ```
+eyeloop --extractors path/to/test_ex.py
+```
+
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
 
 ## Graphical user interface ##
