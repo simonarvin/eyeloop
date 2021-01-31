@@ -72,7 +72,7 @@ class Importer(IMPORTER):
 
     def proceed(self, image) -> None:
         image = self.resize(image)
-        image = self.rotate(image, config.engine.angle)
+        #image = self.rotate(image, config.engine.angle)
         config.engine.update_feed(image)
         self.save(image)
         self.frame += 1

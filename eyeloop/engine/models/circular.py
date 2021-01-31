@@ -82,10 +82,10 @@ class Circle:
         # finding the root of the characteristic polynomial
 
         det = Cov_xy
-        if det != 0:
+        try:
             Xcenter = (Mxz * (Myy) - Myz * Mxy) / det / 2.
             Ycenter = (Myz * (Mxx) - Mxz * Mxy) / det / 2.
-        else:
+        except:
             return 0, 0, 0, 0
 
         x = Xcenter + mean_X

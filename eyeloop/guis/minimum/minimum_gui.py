@@ -20,6 +20,8 @@ class GUI:
         self._state = "adjustment"
         self.inquiry = "none"
         self.terminate = -1
+        self.update_track = self.real_update
+        self.skip = 0
 
     def tip_mousecallback(self, event, x: int, y: int, flags, params) -> None:
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -287,7 +289,14 @@ class GUI:
         if cv2.waitKey(1) == ord('q'):
             config.engine.release()
 
-    def update_track(self, blink: int) -> None:
+    def skip_track(self, _):
+        if self.skip == 100:
+            self.skip = 0
+            self.update_track = self.real_update
+            return
+        self.skip += 1
+
+    def real_update(self, blink: int) -> None:
         frame_preview = cv2.cvtColor(config.engine.source, cv2.COLOR_GRAY2BGR)
         frame_source = frame_preview.copy()
         cr_width = pupil_width = -1
@@ -396,9 +405,11 @@ class GUI:
 
         else:
             # real tracking
+
             self.out.write(frame_preview)
 
             cv2.imshow("TRACKING", frame_preview)
+            self.update_track = self.skip_track
 
             key = cv2.waitKey(1)
 
