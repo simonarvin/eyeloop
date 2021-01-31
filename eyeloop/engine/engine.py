@@ -288,6 +288,8 @@ class Engine:
 
         hit_list = zeros.copy()
 
+
+        # Revise this; See novel algorithm in walkout
         for i, arc_element in enumerate(cos_sin_arc):
             cos, sin = arc_element
             x = cr_center_int[0] + offsetx + cos
