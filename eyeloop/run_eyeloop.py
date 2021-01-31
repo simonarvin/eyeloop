@@ -68,7 +68,7 @@ class EyeLoop:
 
             except Exception as e:
                 logger.info(f"extractors not included, {e}")
-        print(extractors_add)
+
         extractors_base = [fps_counter, data_acquisition]
         extractors = extractors_add + extractors_base
 

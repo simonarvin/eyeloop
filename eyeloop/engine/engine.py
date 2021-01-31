@@ -57,6 +57,7 @@ class Engine:
     def load_extractors(self, extractors: list = None) -> None:
         if extractors is None:
             extractors = []
+        logger.info(f"loading extractors: {extractors}")
         self.extractors = extractors
 
     def real_place_markers(self) -> None:
@@ -117,7 +118,7 @@ class Engine:
             self.mean = np.mean(image)
         # self.blink_threshold = 25.1 * np.log(np.var(image)) - 182  # 0.046 * np.var(image) - 68.11
         if self.blink_threshold == -1:
-            self.blink_threshold = 0.046 * np.var(image) - 58
+            self.blink_threshold = 0.03 * np.var(image)
 
         self.base_mean = -1
         self.blink = 0

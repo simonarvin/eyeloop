@@ -5,7 +5,7 @@ from eyeloop.constants.processor_constants import *
 from eyeloop.engine.models.circular import Circle
 from eyeloop.engine.models.ellipsoid import Ellipse
 from eyeloop.utilities.general_operations import to_int, tuple_int
-
+import time
 
 class Shape():
     def __init__(self, type=1):
@@ -256,6 +256,7 @@ center_stdthres = .95
 class Contour:
 
     def __init__(self, processor, type):
+        self.time = time.time()
 
         self.processor = processor
         if type == 2:
@@ -319,6 +320,124 @@ class Contour:
         x = point_source.copy()
         y = point_source.copy()
         step_list = step_list_source.copy()
+        #self.time = time.time()
+        #rx = rr_stock.copy()
+        #ry = rr_stock.copy()
+
+
+        #print(self.processor.area.shape, self.center)
+        canvas_rgb = cv2.cvtColor(self.processor.area, cv2.COLOR_GRAY2RGB)
+        canvas = self.processor.area.copy()
+        center = np.array(self.center, dtype=int)
+
+
+        rx = rr_stock.copy()
+        ry = rx.copy()
+
+        crop_ = np.argmax(canvas[center[1]:, center[0]] == 0) - 1
+        #canvas_rgb[crop_ + center[1], center[0]] = [0,0,255]
+        ry[0], rx[0] = crop_ + center[1], center[0]
+
+        crop_ = np.argmax(canvas[center[1], center[0]:] == 0) - 1
+        #canvas_rgb[center[1], crop_ + center[0]] = [0,0,255]
+        ry[1], rx[1] = center[1], crop_ + center[0]
+
+        #diagonal
+        crop_canvas = canvas[center[1]:, center[0]:]
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = np.argmax(crop_canvas[diag_matrix] == 0) - 1
+        #canvas_rgb[center[1] + crop_, center[0] + crop_] = [0,0,255]
+        ry[2], rx[2] = center[1] + crop_, center[0] + crop_
+
+        crop_canvas =np.flip(canvas[:center[1], :center[0]])
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = np.argmax(crop_canvas[diag_matrix] == 0)
+
+        #canvas_rgb[center[1] - crop_, center[0] - crop_] = [0,0,255]
+        ry[3], rx[3] = center[1] - crop_, center[0] - crop_
+
+        crop_canvas =np.fliplr(canvas[center[1]:, :center[0]])
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = np.argmax(crop_canvas[diag_matrix] == 0)
+
+        #canvas_rgb[center[1] + crop_, center[0] - crop_] = [0,0,255]
+        ry[4], rx[4] = center[1] + crop_, center[0] - crop_
+
+        crop_canvas =np.flipud(canvas[:center[1], center[0]:])###
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = np.argmax(crop_canvas[diag_matrix] == 0)
+
+        #canvas_rgb[center[1] - crop_, center[0] + crop_] = [0,0,255]
+        ry[5], rx[5] = center[1] - crop_, center[0] + crop_
+
+        M = cv2.getRotationMatrix2D(tuple(center), -22.5, 1)
+        rot_canvas = cv2.warpAffine(canvas, M, canvas.shape,  flags=cv2.INTER_NEAREST)
+
+        crop_ = np.argmax(rot_canvas[center[1]:, center[0]] == 0) - 1
+        #canvas_rgb[int(round(cos_angle_p225 * crop_)) + center[1], center[0] + int(round(sin_angle_p225 * crop_))] = [0,0,255] #clean
+        ry[6], rx[6] = int(round(cos_angle_p225 * crop_)) + center[1], center[0] + int(round(sin_angle_p225 * crop_))
+
+        crop_ = np.argmax(rot_canvas[center[1], center[0]:] == 0) - 1
+        #canvas_rgb[int(round(cos_angle_p225p90 * crop_)) + center[1], center[0] + int(round(sin_angle_p225p90 * crop_))] = [0,0,255]# #clean
+        ry[7], rx[7] = int(round(cos_angle_p225p90 * crop_)) + center[1], center[0] + int(round(sin_angle_p225p90 * crop_))
+
+        #----  diagnonal rot
+        crop_canvas = rot_canvas[center[1]:, center[0]:]
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = (np.argmax(crop_canvas[diag_matrix] == 0) - 1) * sqrt_two
+
+        #canvas_rgb[int(round(cos_angle_p225p45 * crop_)) + center[1], center[0] + int(round(sin_angle_p225p45 * crop_))] = [0,0,255] #clean
+        ry[8], rx[8] = int(round(cos_angle_p225p45 * crop_)) + center[1], center[0] + int(round(sin_angle_p225p45 * crop_))
+
+        crop_canvas = np.flip(rot_canvas[:center[1], :center[0]])
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = np.argmax(crop_canvas[diag_matrix] == 0) * sqrt_two
+
+        #canvas_rgb[-int(round(cos_angle_p225p45 * crop_)) + center[1], center[0] - int(round(sin_angle_p225p45 * crop_))] = [0,0,255] #clean
+        ry[9], rx[9] = -int(round(cos_angle_p225p45 * crop_)) + center[1], center[0] - int(round(sin_angle_p225p45 * crop_))
+
+        crop_canvas =np.fliplr(rot_canvas[center[1]:, :center[0]])
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = (np.argmax(crop_canvas[diag_matrix] == 0)) * sqrt_two
+
+        #canvas_rgb[int(round(cos_angle_p225m45 * crop_)) + center[1], center[0] + int(round(sin_angle_p225m45 * crop_))] = [0,0,255] #clean
+        ry[10], rx[10] = int(round(cos_angle_p225m45 * crop_)) + center[1], center[0] + int(round(sin_angle_p225m45 * crop_))
+
+        crop_canvas =np.flipud(rot_canvas[:center[1], center[0]:])###
+        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
+        crop_ = np.argmax(crop_canvas[diag_matrix] == 0) * sqrt_two
+
+        #canvas_rgb[-int(round(cos_angle_p225m45 * crop_)) + center[1], center[0] - int(round(sin_angle_p225m45 * crop_))] = [0,0,255] #clean
+        ry[11], rx[11] = -int(round(cos_angle_p225m45 * crop_)) + center[1], center[0] - int(round(sin_angle_p225m45 * crop_))
+
+        canvas_rgb[center[1],center[0]] = [0,0,255]
+        rot_canvas = np.flip(rot_canvas)
+
+        crop_ = np.argmax(rot_canvas[-center[1] - 1:, -center[0] - 1] == 0) - 1
+        #canvas_rgb[-int(round(cos_angle_p225 * crop_)) + center[1], center[0] - int(round(sin_angle_p225 * crop_))] = [0,0,255] #clean
+        ry[12], rx[12] = -int(round(cos_angle_p225 * crop_)) + center[1], center[0] - int(round(sin_angle_p225 * crop_))
+
+        crop_ = np.argmax(rot_canvas[-center[1] - 1, -center[0] - 1:] == 0) - 1
+        #canvas_rgb[-int(round(cos_angle_p225p90 * crop_)) + center[1], center[0] - int(round(sin_angle_p225p90 * crop_))] = [0,0,255] #clean
+        ry[13], rx[13] = -int(round(cos_angle_p225p90 * crop_)) + center[1], center[0] - int(round(sin_angle_p225p90 * crop_))
+
+        canvas = np.flip(canvas) # flip once
+
+        crop_ = np.argmax(canvas[-center[1] - 1, -center[0] - 1:] == 0) - 1
+        #canvas_rgb[center[1], -crop_ + center[0]] = [0,0,255]
+        ry[14], rx[14] = center[1], -crop_ + center[0]
+
+        crop_ = np.argmax(canvas[-center[1] - 1:, -center[0] - 1] == 0) - 1
+        #canvas_rgb[-crop_ + center[1], center[0]] = [0,0,255]
+        ry[15], rx[15] = -crop_ + center[1], center[0]
+
+        #cv2.imshow("test_canvas", canvas_rgb)
+
+        #cv2.waitKey(0)
+        self.rx, self.ry = rx[(0 != rx)], ry[(0 != ry)]
+        #print(f"processing duration: {time.time() - self.time} secs")
+        return True
+
 
         offset = self.processor.walkout_offset
         b = 0
@@ -330,7 +449,7 @@ class Contour:
             y[i] = self.center[1] + sin * offset
 
             insidemark = False
-
+            #0.001095056533813476 versus 0.000908613204956054
             for _ in limit:
                 b += 1
                 # If walkout coordinate hits out-of-contour area, break out of the loop.
@@ -376,5 +495,5 @@ class Contour:
             return False
 
         self.rx, self.ry = x[(0 != x)], y[(0 != y)]
-
+        #print(len(self.rx))
         return True
