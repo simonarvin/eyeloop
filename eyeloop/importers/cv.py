@@ -18,6 +18,8 @@ class Importer(IMPORTER):
 
     def first_frame(self) -> None:
         self.vid_path = Path(config.arguments.video)
+
+
         # load first frame
         if str(self.vid_path.name) == "0" or self.vid_path.is_file():  # or stream
             if str(self.vid_path.name) == "0":
@@ -72,9 +74,9 @@ class Importer(IMPORTER):
 
     def proceed(self, image) -> None:
         image = self.resize(image)
-        #image = self.rotate(image, config.engine.angle)
-        config.engine.update_feed(image)
-        self.save(image)
+        self.rotate_(image, config.engine.angle)
+        config.engine.iterate(image)
+        self.save_(image)
         self.frame += 1
 
     def route_sequence_sing(self) -> None:
@@ -111,3 +113,4 @@ class Importer(IMPORTER):
 
         self.route_frame = None
         cv2.destroyAllWindows()
+        super().release()

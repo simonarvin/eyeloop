@@ -19,21 +19,8 @@ class Engine:
 
         self.eyeloop = eyeloop
         self.model = config.arguments.model  # Used for assigning appropriate circular model.
-
+        self.extractors = []
         self.blink_threshold = config.arguments.bthreshold
-        self.std = -1  # Used for infering blinking.
-        self.mean = -1  # Used for infering blinking.
-
-        # Hard-code blink inference parameters:
-        #self.mean =
-        #self.blink_threshold =
-
-        if config.arguments.markers == False:  # Markerless. -m 0 (default)
-            self.place_markers = lambda: None
-        else:  # Enables markers to remove artifacts. -m 1
-            self.place_markers = self.real_place_markers
-        self.marks = []
-        self.blink: Optional[int] = None
 
         if config.arguments.tracking == 0:  # Recording mode. --tracking 0
             self.iterate = self.record
@@ -41,13 +28,9 @@ class Engine:
             self.iterate = self.track
 
         self.angle = 0
-        self.extractors = []
 
-
-
-        max_cr_processor = 3
-        self.cr_log_stock = [-1] * max_cr_processor
-        self.cr_processors = [Shape(type=2) for _ in range(max_cr_processor)]
+        self.cr_processor_1 = Shape(type = 2, n = 1)
+        self.cr_processor_2 = Shape(type = 2, n = 2)
         self.pupil_processor = Shape()
 
         #   Via "gui", assign "refresh_pupil" to function "processor.refresh_source"
@@ -60,22 +43,6 @@ class Engine:
         logger.info(f"loading extractors: {extractors}")
         self.extractors = extractors
 
-    def real_place_markers(self) -> None:
-        """
-        Circumvents artifacts (crudely) via demarcations for the pupil processor.
-        """
-
-        for i, mark in enumerate(self.marks):
-            if (i % 2) == 0:
-                try:
-                    self.pupil_processor.area[
-                    mark[1] - self.pupil_processor.corners[0][1]:self.marks[i + 1][1] - self.pupil_processor.corners[0][
-                        1],
-                    mark[0] - self.pupil_processor.corners[0][0]:self.marks[i + 1][0] - self.pupil_processor.corners[0][
-                        0]] = 100
-                except:
-                    # odd marks or no pupil yet.
-                    break
 
     def run_extractors(self) -> None:
         """
@@ -100,11 +67,7 @@ class Engine:
         timestamp = time.time()
 
         self.dataout = {
-            "time": timestamp,
-            "frame": config.importer.frame,
-            "blink": -1,
-            "cr": -1,
-            "pupil": -1,
+            "time": timestamp
         }
 
         config.graphical_user_interface.update_record(self.source)
@@ -112,60 +75,18 @@ class Engine:
         self.run_extractors()
 
     def arm(self, width, height, image) -> None:
-        self.norm = (width + height) * .003
-        self.norm_cr_artefact = int(6 * self.norm)
-        if self.mean == -1:
-            self.mean = np.mean(image)
-        # self.blink_threshold = 25.1 * np.log(np.var(image)) - 182  # 0.046 * np.var(image) - 68.11
-        if self.blink_threshold == -1:
-            self.blink_threshold = 0.03 * np.var(image)
-
-        self.base_mean = -1
-        self.blink = 0
-
-        self.blink_i = 0
 
         self.width, self.height = width, height
         config.graphical_user_interface.arm(width, height)
+        self.center = (width//2, height//2)
 
-        self.update_feed(image)
+        self.iterate(image)
 
-        self.pupil_processor.binarythreshold = float(np.min(self.source)) * .7
-        for cr_processor in self.cr_processors:
-            cr_processor.binarythreshold = float(np.min(self.source)) * .7
+        self.pupil_processor.binarythreshold = float(np.min(image)) * .7 + 50
+        self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(image)) * .7 + 150
 
-    def check_blink(self, threshold: Optional[float] = None) -> bool:
-        """
-        Analyzes the monochromatic distribution of the frame,
-        to infer blinking. Change in mean during blinking is very distinct.
-        :returns: True if blink detected, False otherwise
-        """
-        # TODO calculate threshold using another method?
-        if threshold is None:
-            threshold = self.blink_threshold
-            # print(f"threshold = {threshold}")
 
-        mean = np.mean(self.source)
-        delta = self.mean - mean
-        self.mean = mean
-
-        if threshold < 0:
-            raise ValueError(f"check_blink() threshold must be greater than 0! Threshold was {threshold}")
-
-        # print(f"blink delta = {abs(delta)}")
-        if abs(delta) > threshold:
-            self.blink = 10  # TODO does this parameter mean a blink lasts for 10 frames? Should this be here?
-            print("blink detected!")
-            return True
-        elif self.blink != 0:
-
-            self.blink -= 1
-            return True
-        else:
-            self.blink = 0
-            return False
-
-    def track(self) -> None:
+    def track(self, img) -> None:
         """
         Executes the tracking algorithm on the pupil and corneal reflections.
         First, blinking is analyzed.
@@ -175,60 +96,26 @@ class Engine:
         Finally, data is logged and extractors are run.
         """
 
-        timestamp = time.time()
-        cr_width = cr_height = cr_center = cr_angle = pupil_center = pupil_width = pupil_height = pupil_angle = -1
+        self.dataout = {
+            "time": time.time()
+        }
 
-        cr_log = self.cr_log_stock.copy()
-
-        if self.check_blink() is False:
-            blink = 0
-            try:
-                pupil_area = self.pupil_processor.area
-                offsetx, offsety = -self.pupil_processor.corners[0]
-            except:
-                offsetx, offsety = 0, 0
-                _, pupil_area = cv2.threshold(
-                    cv2.GaussianBlur(self.pupil_source, (self.pupil_processor.blur, self.pupil_processor.blur), 0),
-                    60 + self.pupil_processor.binarythreshold, 255, cv2.THRESH_BINARY_INV)
-
-            for i, cr_processor in enumerate(self.cr_processors):
-                if cr_processor.active:
-                    cr_processor.refresh_source(self.source)
-                    try:
-                        if cr_processor.track():
-                            self.cr_artifacts(cr_processor, offsetx, offsety, pupil_area)
-                            cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
-                            cr_log[i] = ((cr_width, cr_height), cr_center, cr_angle)
-                    except:
-                        pass  # for now, let's pass any errors arising from Shape().track() - this caused EyeLoop to crash when cr_processor.track() failed.
-
-            self.refresh_pupil(self.pupil_source)  # lambda _: None when pupil not selected in gui.
-            self.place_markers()  # lambda: None when markerless (-m 0).
-
-            if self.pupil_processor.track():
-                self.pupil = self.pupil_processor.center
-                pupil_center, pupil_width, pupil_height, pupil_angle, pupil_dimensions_int = self.pupil_processor.ellipse.parameters()
-
-
+        if np.mean(img) < config.blink:
+            self.dataout["blink"] = 1
         else:
-            blink = 1
 
-        self.blink_i = blink
+            self.pupil_processor.track(img)
+
+            self.cr_processor_1.track(img)
+        #self.cr_processor_2.track(img.copy(), img)
+
 
         try:
-            config.graphical_user_interface.update_track(blink)
+            config.graphical_user_interface.update(img)
         except Exception as e:
             logger.exception("Did you assign the graphical user interface (GUI) correctly? Attempting to release()")
             self.release()
             return
-
-        self.dataout = {
-            "time": timestamp,
-            "frame": config.importer.frame,
-            "blink": blink,
-            "cr": cr_log,
-            "pupil": ((pupil_width, pupil_height), pupil_center, pupil_angle),
-        }
 
         self.run_extractors()
 
@@ -254,73 +141,10 @@ class Engine:
 
         for extractor in self.extractors:
             try:
-                extractor.release()
+                extractor.release(self)
             except AttributeError:
                 logger.warning(f"Extractor {extractor} has no release() method")
+            else:
+                pass
 
         config.importer.release()
-
-    def update_feed(self, img) -> None:
-
-        self.source = img.copy()
-        self.pupil_source = img.copy()
-
-        self.iterate()
-
-    def cr_artifacts(self, cr_processor, offsetx: int, offsety: int, pupil_area) -> None:
-        """
-        Computes pupillary overlaps and acts to remove these artifacts.
-        """
-
-        cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
-
-        cr_center_int = tuple_int(cr_center)
-        larger_width, larger_height = larger_radius = tuple(int(1.2 * element) for element in cr_dimensions_int)
-
-        cr_width_norm = larger_width * self.norm
-        cr_height_norm = larger_height * self.norm
-
-        dimensional_product = larger_width * larger_height
-
-        arc = [dimensional_product / np.sqrt(
-            (cr_width_norm * anglesteps_cos[i]) ** 2 + (cr_width_norm * anglesteps_sin[i]) ** 2) for i in angular_range]
-        cos_sin_arc = [(to_int(anglesteps_cos[i] * arc[i]), to_int(anglesteps_sin[i] * arc[i])) for i in angular_range]
-
-        hit_list = zeros.copy()
-
-
-        # Revise this; See novel algorithm in walkout
-        for i, arc_element in enumerate(cos_sin_arc):
-            cos, sin = arc_element
-            x = cr_center_int[0] + offsetx + cos
-            y = cr_center_int[1] + offsety + sin
-            n = 1
-
-            while n < self.norm_cr_artefact:
-                n += 1
-                try:
-                    if pupil_area[y, x] != 0:
-                        hit_list[i] = i + 1
-                        break
-                    else:
-                        x += cos
-                        y += sin
-                except:
-                    break
-
-        if np.any(hit_list):
-            delta = np.count_nonzero(number_row - hit_list)
-
-            if delta < self.norm_cr_artefact:
-
-                cv2.ellipse(self.pupil_source, cr_center_int, larger_radius, cr_angle, 0, 360, 0, -1)
-            else:
-
-                for element in hit_list:
-                    if element != 0:
-                        cos, sin = cos_sin_arc[element - 1]
-                        x = cr_center_int[0] + cos
-                        y = cr_center_int[1] + sin
-                        cv2.ellipse(self.pupil_source, cr_center_int, larger_radius, cr_angle, element * 40 - 40,
-                                    element * 40, 0, 4)  # normalize qqqq
-                        # cv2.line(self.pupil_source, cr_center_int, (x, y), 0, 4) #normalize linewidth qqqq

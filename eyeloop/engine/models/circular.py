@@ -4,6 +4,7 @@
 # hyper-fit authors: Kenichi Kanatani & Prasanna Rangarajan
 
 import numpy as np
+np.seterr('raise')
 
 from eyeloop.utilities.general_operations import tuple_int
 
@@ -11,29 +12,10 @@ from eyeloop.utilities.general_operations import tuple_int
 class Circle:
     def __init__(self, processor) -> None:
         self.shape_processor = processor
+        self.fit = self.hyper_fit
+        self.params = None
 
-    def fit(self, x: np.ndarray, y: np.ndarray) -> bool:
-
-        try:
-            x_coord, y_coord, radius, v = self.hyper_fit(x, y)
-            if radius < 4:
-                return False
-
-            self.center = [self.shape_processor.corners[0][0] + x_coord, self.shape_processor.corners[0][1] + y_coord]
-            self.width = self.height = radius
-
-            self.dimensions_int = tuple_int((radius, radius))
-
-        except:
-            return False
-
-        return True
-
-    def parameters(self) -> tuple:
-        # center, width, height, angle, dimensions
-        return self.center, self.width, self.height, 0, self.dimensions_int
-
-    def hyper_fit(self, x: np.ndarray, y: np.ndarray) -> tuple:
+    def hyper_fit(self, r) -> tuple:
         """
         Fits coords to circle using hyperfit algorithm.
         Inputs:
@@ -50,46 +32,41 @@ class Circle:
             - R : Radius of solution (float)
             - residu : s, sigma - variance of data wrt solution (float)
         """
-        X = np.array(x)  # np.array([x[0] for x in coords])
-        Y = np.array(y)  # np.array([x[1] for x in coords])
-
+        X, Y = r[:,0], r[:,1]
         n = X.shape[0]
 
         mean_X = np.mean(X)
         mean_Y = np.mean(Y)
         Xi = X - mean_X
         Yi = Y - mean_Y
-        Zi = Xi * Xi + Yi * Yi
+        Xi_sq = Xi**2
+        Yi_sq = Yi**2
+        Zi = Xi_sq + Yi_sq
 
         # compute moments
+
         Mxy = np.sum(Xi * Yi) / n
-        Mxx = np.sum(Xi * Xi) / n
-        Myy = np.sum(Yi * Yi) / n
+        Mxx = np.sum(Xi_sq) / n
+        Myy = np.sum(Yi_sq) / n
         Mxz = np.sum(Xi * Zi) / n
         Myz = np.sum(Yi * Zi) / n
-        Mzz = np.sum(Zi * Zi) / n
 
-        # computing the coefficients of characteristic polynomial
         Mz = Mxx + Myy
-        Cov_xy = Mxx * Myy - Mxy * Mxy
-        Var_z = Mzz - Mz * Mz
-
-        A2 = 4 * Cov_xy - 3 * Mz * Mz - Mzz
-        A1 = Var_z * Mz + 4. * Cov_xy * Mz - Mxz * Mxz - Myz * Myz
-        A0 = Mxz * (Mxz * Myy - Myz * Mxy) + Myz * (Myz * Mxx - Mxz * Mxy) - Var_z * Cov_xy
-        A22 = A2 + A2
 
         # finding the root of the characteristic polynomial
 
-        det = Cov_xy
+        det = (Mxx * Myy - Mxy**2)*2
+        #print(det)
         try:
-            Xcenter = (Mxz * (Myy) - Myz * Mxy) / det / 2.
-            Ycenter = (Myz * (Mxx) - Mxz * Mxy) / det / 2.
+            Xcenter = (Mxz * Myy - Myz * Mxy)/ det
+            Ycenter = (Myz * Mxx - Mxz * Mxy)/ det
         except:
-            return 0, 0, 0, 0
+            return False
 
         x = Xcenter + mean_X
         y = Ycenter + mean_Y
-        r = np.sqrt(abs(Xcenter ** 2 + Ycenter ** 2 + Mz))
-        # s = self.sigma(coords,x,y,r)
-        return x, y, r, 1
+        r = np.sqrt(Xcenter ** 2 + Ycenter ** 2 + Mz)
+        self.params = ((x, y), r, r, 0)
+        #self.center, self.width, self.height, self.angle = self.params
+
+        return self.params[0]

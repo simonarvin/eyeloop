@@ -1,4 +1,5 @@
 import numpy as np
+np.seterr('raise')
 
 from eyeloop.utilities.general_operations import tuple_int
 
@@ -26,6 +27,7 @@ from eyeloop.utilities.general_operations import tuple_int
 class Ellipse:
     def __init__(self, processor):
         self.shape_processor = processor
+        self.params = None
 
     def fit(self, x, y):
         """Least Squares fitting algor6ithm
@@ -43,44 +45,37 @@ class Ellipse:
         """
 
         # Quadratic part of design matrix [eqn. 15] from (*)
-        try:
-            D1 = np.mat(np.vstack([x ** 2, x * y, y ** 2])).T
-            # Linear part of design matrix [eqn. 16] from (*)
-            D2 = np.mat(np.vstack([x, y, np.ones(len(x))])).T
 
-            # forming scatter matrix [eqn. 17] from (*)
-            S1 = D1.T * D1
-            S2 = D1.T * D2
-            S3 = D2.T * D2
+        D1 = np.mat(np.vstack([x ** 2, x * y, y ** 2])).T
+        # Linear part of design matrix [eqn. 16] from (*)
+        D2 = np.mat(np.vstack([x, y, np.ones(len(x))])).T
 
-            # Constraint matrix [eqn. 18]
-            C1 = np.mat('0. 0. 2.; 0. -1. 0.; 2. 0. 0.')
+        # forming scatter matrix [eqn. 17] from (*)
+        S1 = D1.T * D1
+        S2 = D1.T * D2
+        S3 = D2.T * D2
 
-            # Reduced scatter matrix [eqn. 29]
-            M = C1.I * (S1 - S2 * S3.I * S2.T)
+        # Constraint matrix [eqn. 18]
+        C1 = np.mat('0. 0. 2.; 0. -1. 0.; 2. 0. 0.')
 
-            # M*|a b c >=l|a b c >. Find eigenvalues and eigenvectors from this equation [eqn. 28]
-            eval, evec = np.linalg.eig(M)
+        # Reduced scatter matrix [eqn. 29]
+        M = C1.I * (S1 - S2 * S3.I * S2.T)
 
-            # eigenvector must meet constraint 4ac - b^2 to be valid.
-            cond = 4 * np.multiply(evec[0, :], evec[2, :]) - np.power(evec[1, :], 2)
-            a1 = evec[:, np.nonzero(cond.A > 0)[1]]
-            # self.fitscore=eval[np.nonzero(cond.A > 0)[1]]
+        # M*|a b c >=l|a b c >. Find eigenvalues and eigenvectors from this equation [eqn. 28]
+        eval, evec = np.linalg.eig(M)
 
-            # |d f g> = -S3^(-1)*S2^(T)*|a b c> [eqn. 24]
-            a2 = -S3.I * S2.T * a1
+        # eigenvector must meet constraint 4ac - b^2 to be valid.
+        cond = 4 * np.multiply(evec[0, :], evec[2, :]) - np.power(evec[1, :], 2)
+        a1 = evec[:, np.nonzero(cond.A > 0)[1]]
+        # self.fitscore=eval[np.nonzero(cond.A > 0)[1]]
 
-            # eigenvectors |a b c d f g>
-            self.coef = np.vstack([a1, a2])
-            if self._save_parameters():
-                return False
+        # |d f g> = -S3^(-1)*S2^(T)*|a b c> [eqn. 24]
+        #a2 = -S3.I * S2.T * a1
 
-            return True
-        except Exception as e:
+        # eigenvectors |a b c d f g>
+        self.coef = np.vstack([a1, -S3.I * S2.T * a1])
 
-            return False
 
-    def _save_parameters(self):
         """finds the important parameters of the fitted ellipse
 
         Theory taken form http://mathworld.wolfram
@@ -105,30 +100,31 @@ class Ellipse:
         f = self.coef[4, 0] / 2.
         g = self.coef[5, 0]
 
-        if (a - c) == 0:
-            return True
+    #    if (a - c) == 0:
+    #        return True
 
         # finding center of ellipse [eqn.19 and 20] from (**)
-        x0 = (c * d - b * f) / (b ** 2. - a * c)
-        y0 = (a * f - b * d) / (b ** 2. - a * c)
+        af = a * f
+        cd = c * d
+        bd = b * d
+        ac = a * c
+
+        b_sq = b ** 2.
+        z_ = (b_sq - ac)
+        x0 = (cd - b * f) / z_#(b ** 2. - a * c)
+        y0 = (af - bd) / z_#(b ** 2. - a * c)
 
         # Find the semi-axes lengths [eqn. 21 and 22] from (**)
-        numerator = 2 * (a * f * f + c * d * d + g * b * b - 2 * b * d * f - a * c * g)
-        denominator1 = (b * b - a * c) * ((c - a) * np.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
-        denominator2 = (b * b - a * c) * ((a - c) * np.sqrt(1 + 4 * b * b / ((a - c) * (a - c))) - (c + a))
+        ac_subtr = a - c
+        numerator = 2 * (af * f + cd * d + g * b_sq - 2 * bd * f - ac * g)
+        denom = ac_subtr * np.sqrt(1 + 4 * b_sq / ac_subtr**2)
+        denominator1, denominator2 = (np.array([-denom, denom], dtype=np.float64) - c - a) * z_
+
         width = np.sqrt(numerator / denominator1)
         height = np.sqrt(numerator / denominator2)
 
-        phi = .5 * np.arctan((2. * b) / (a - c))
+        phi = .5 * np.arctan((2. * b) / ac_subtr)
+        self.params = ((x0, y0), width, height, np.rad2deg(phi) % 360)
 
-        self.center = [self.shape_processor.corners[0][0] + x0, self.shape_processor.corners[0][1] + y0]
-        self.width = width
-        self.height = height
-        self.dimensions_int = tuple_int((width, height))
-
-        self.angle = np.rad2deg(phi) % 360
-        return False
-
-    def parameters(self):
-        # return (self.shape_processor.corners[0][0] + self.center[0], self.shape_processor.corners[0][1] + self.center[1]), self.width, self.height, self.phi
-        return self.center, self.width, self.height, self.angle, self.dimensions_int  # This is local to crop area
+        #self.center, self.width, self.height, self.angle = self.params
+        return self.params[0]

@@ -1,29 +1,28 @@
 import time
-
+import threading
+import eyeloop.config as config
 
 class FPS_extractor:
     """
     Simple fps-counter. Acts as an interface. Pass it to CORE(interfaces=[..]) in puptrack.py.
     """
 
-    def __init__(self, max_iter=100):
-        self.max_iter = max_iter
-        self.reset()
+    def __init__(self):
+        self.fetch = lambda _: None
+        self.activate = lambda: None
 
-    def activate(self):
-        return
+        self.last_frame = 0
 
-    def reset(self):
-        self.iteration = 0
-        self.start = time.time()
+        self.thread = threading.Timer(1, self.get_fps)
+        self.thread.start()
 
-    def fetch(self, core):
-        self.iteration += 1
-        if self.iteration == self.max_iter:
-            framerate = self.max_iter / (time.time() - self.start)
 
-            print("    Currently processing {} frames per second.".format(int(framerate)))
-            self.reset()
+    def get_fps(self):
+        print(f"    Processing {config.importer.frame - self.last_frame} frames per second.")
+        self.last_frame = config.importer.frame
+        self.thread = threading.Timer(1, self.get_fps)
+        self.thread.start()
 
-    def release(self):
-        return
+
+    def release(self, core):
+        self.thread.cancel()

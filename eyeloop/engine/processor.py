@@ -6,26 +6,63 @@ from eyeloop.engine.models.circular import Circle
 from eyeloop.engine.models.ellipsoid import Ellipse
 from eyeloop.utilities.general_operations import to_int, tuple_int
 import time
+import logging
+
+from scipy.spatial.distance import cdist
+logger = logging.getLogger(__name__)
+
+"""
+TODO:
+XXFilter rx, ry
+XXSingularize area/source
+XXConvert CR artefact algorithm to matrix method
+---If pupil not detected, choose from meshgrid centers
+Infer blinking
+Fail proof centerfinding. F.eks., gæt hvor pupillen nu er. Eller brug findcontour og find central contourcentrum
+    forbedr dette
+Overvej at tilføje cropping alligevel; Måske specifikt ved Gaussian/erosion.
+Tilføj walkout offset
+    ...du kan gøre det ved at lave en mask i centrum
+
+Ryk extractors core til class: self.core
+    ligegyldigt da threading variable skal være pickable
+Lav evt en extractor super-class
+
+XX Tilpas ellipse modellen til det nye
+    XX Optimér ellipse modellen
+
+Forbedr clipping
+
+Lav walkout til pupil og CR. CR med færre punkter
+
+"""
+
+class Center_class():
+    def fit(self, r):
+        self.params = tuple(np.mean(r, axis = 0))
+        return self.params
 
 class Shape():
-    def __init__(self, type=1):
+    def __init__(self, type = 1, n = 0):
 
         self.active = False
         self.center = -1
-        self.margin = -1
-        self.walkout_offset = 0
-        self.binarythreshold = -1
-        self.blur = 9
-        self.type = type
-        self.cropsource = -1
-        self.corners = -1
-        self.center_index = 0
-        self.model = config.arguments.model
-        self.walkout = Contour(self, type)
 
-        self.parameters = 0
+        self.walkout_offset = 0
+
+        self.binarythreshold = -1
+        self.blur = (3, 3)
+        self.type = type
+        self.fit_ = lambda: None
+
+        self.model = config.arguments.model
+        self.type_entry = None
+        self.track = lambda x:None
+
 
         if type == 1:
+            self.artefact = lambda _:None
+            self.type_entry = "pupil"
             self.thresh = self.pupil_thresh
 
             if self.model == "circular":
@@ -33,480 +70,263 @@ class Shape():
             else:
                 self.fit_model = Ellipse(self)
 
+            self.min_radius = 3
+            self.max_radius = 30 #change according to video size or argument
+            self.cond = self.cond_
+            #self.clip = lambda x:None
+            self.clip = self.clip_
+            self.center_adj = self.center_adj_
+            self.walkout = self.pupil_walkout
         else:
-            self.fit_model = Ellipse(self)
+            self.walkout = self.cr_walkout
+            self.type_entry = f"cr_{n}"
+            self.center_adj = lambda:None
+            self.cond = lambda r,_:r
+            self.clip = self.clip_
+            self.expand = 1.2
+            self.artefact = lambda _:None
+            #self.artefact = self.artefact_
+            self.fit_model = Center_class()#Circle(self)
+
+            self.min_radius = 2
+            self.max_radius = 5 #change according to video size or argument
 
             self.thresh = self.cr_thresh
 
     def pupil_thresh(self):
         # Pupil
-        _, self.area = cv2.threshold(self.area, 50 + self.binarythreshold, 255, cv2.THRESH_BINARY_INV)
+
+        self.source[:] = cv2.threshold(cv2.GaussianBlur(cv2.erode(self.source, kernel, iterations = 1), self.blur, 0), self.binarythreshold, 255, cv2.THRESH_BINARY_INV)[1]
+        #self.source[:] = cv2.GaussianBlur(self.source, self.blur, 0)
 
     def cr_thresh(self):
         # CR
-        _, self.area = cv2.threshold(self.area, 150 + self.binarythreshold, 255, cv2.THRESH_BINARY)
 
-    def refresh_source(self, source):
+        _, self.source[:] = cv2.threshold(cv2.GaussianBlur(self.source, self.blur, 0), self.binarythreshold, 255, cv2.THRESH_BINARY)
+        #self.source[:] =
 
-        try:
-            try:
-                self.source = source
+    def reset(self, center):
 
-                #ok = self.tracker.init(self.source, self.bbox)
-            except:
-                pass
-
-            self.cropsource = source[self.corners[0][1]:self.corners[1][1],
-                              self.corners[0][0]:self.corners[1][0]]
-
-            # The following lines perform a simple binarization and apply a smoothing gaussian kernel.
-            self.area = self.cropsource.copy()
-            if self.type == 1:
-
-                erosion = cv2.erode(self.area, kernel, iterations=2)
-
-                self.area = cv2.GaussianBlur(erosion, (self.blur, self.blur), 0)
-
-            else:
-                self.area = cv2.GaussianBlur(self.area, (self.blur, self.blur), 0)
-            self.thresh()
-
-        except Exception as e:
-            print("Kkk", e)
-            pass
-
-    def reset(self, center, col):
         self.active = True
         self.margin = 0
         self.walkout_offset = 0
         self.center = center
-
-        mesh = np.array(np.meshgrid([0, 5, -5], [0, -5, 5]))
-        point_offset = mesh.T.reshape(-1, 2)
-        self.original_center = [(center[0] + p[0], center[1] + p[1]) for p in point_offset]
+        self.fit_ = self.fit
+        self.track = self.track_
 
         self.standard_corners = [(0, 0), (config.engine.width, config.engine.height)]
         self.corners = self.standard_corners.copy()
 
         #self.tracker = cv2.TrackerMedianFlow_create()
 
-    def track(self, last: bool = False):
+    def track_(self, source):
+
+        self.source = source.copy()
+        #self.img = img
+
+        # Performs a simple binarization and applies a smoothing gaussian kernel.
+        self.thresh() #either pupil or cr
+        self.fit_() #gets fit model
+
+
+    def center_adj_(self):
+        return
+        #revise, todo
+        circles = cv2.HoughCircles(self.source, cv2.HOUGH_GRADIENT,1,20,
+                            param1=50,param2=30,minRadius=self.minRadius,maxRadius=self.maxRadius)
+        contour_center = config.engine.center
+        self.center = circles[0,0][:1]
+
+
+
+
+    def artefact_(self, params):
+        cv2.circle(config.engine.pup_source, tuple_int(params[0]), to_int(params[1] * self.expand), black, -1)
+
+    def fit(self):
+        try:
+            r = self.walkout()
+
+            self.center = self.fit_model.fit(r)
+
+            #params = self.fit_model.params
+            #self.artefact(params)
+
+            config.engine.dataout[self.type_entry] = self.fit_model.params#params
+        except IndexError:
+            logger.info(f"fit indexrror")
+            self.center_adj()
+        except Exception as e:
+            logger.info(f"fit-func error: {e}")
+
+
+    def cond_(self, r, crop_list):
+
+
+        #t=time.time()
+        #print(np.mean([rx,ry],axis=1, dtype=np.float64).shape)
+    #    dists =  np.linalg.norm(np.mean([rx,ry],axis=1, dtype=np.float64)[:,np.newaxis] - np.array([rx, ry], dtype = np.float64), axis = 0)
+        dists =  np.linalg.norm(np.mean(r,  axis = 0,dtype=np.float64) - r, axis = 1)
+
+        #print(time.time() - t)
+        #
+        mean_ = np.mean(dists)
+        std_ = np.std(dists)
+        #t=time.time()
+        lower, upper = mean_ - std_, mean_ + std_ * .8
+        cond_ = np.logical_and(np.greater_equal(dists, lower), np.less(dists, upper))
+        #print(time.time() - t)
+    #    print(cond_, dists)
+        return r[cond_]
+
+    def clip_(self, crop_list):
+        np.clip(crop_list, self.min_radius, self.max_radius, out = crop_list)
+
+    def pupil_walkout(self):
+
+
+        #diag_matrix = main_diagonal[:canvas_.shape[0], :canvas_.shape[1]]
 
         try:
+            center = np.array(self.center, dtype=int)
+        except:
+            #nonetype
 
-            # FIXME: while the hasattr is fixing the exception, it is not the
-            #        most elegant solution (nor probably the right one)
-            if config.engine.blink_i == 1 and hasattr(self, 'standard_corners'):
-                self.corners = self.standard_corners.copy()
-                self.walkout_offset = 0
-                self.refresh_source(self.source)
+            return
+        canvas = np.array(self.source, dtype=int)#.copy()
 
-                contours, hierarchy = cv2.findContours(self.area, 1, 2)
-                if len(contours) > 0:
-                    dists = np.zeros(len(contours))
-                    for i, cnt in enumerate(contours):
+        r = rr_2d.copy()
 
-                        M = cv2.moments(cnt)
-                        try:
-                            cx = int(M['m10'] / M['m00'])
-                            cy = int(M['m01'] / M['m00'])
-                            if self.type == 1:
-                                dists[i] = np.mean(self.source[cy - 2:cy + 2, cx - 2:cx + 2])
-                            else:
+        crop_list = crop_stock.copy()
 
-                                dists[i] = np.sqrt((cx - self.center[0]) ** 2 + (cy - self.center[1]) ** 2)
-
-                        except:
-                            dists[i] = 255
-
-                    from operator import itemgetter
-                    # todo: score these based on 1) color and 2) distance to center
-                    M = cv2.moments(contours[min(enumerate(dists), key=itemgetter(1))[0]])
-                    try:
-                        cx = round(M['m10'] / M['m00'])
-                        cy = round(M['m01'] / M['m00'])
-                    except:
-
-                        return False
-                    # print(cx,cy)
-                    self.center = (cx, cy)
-
-                    # self.source[cy,cx]=250
-                    # cv2.imshow("JJ", self.source)
-                    # cv2.waitKey(0)
-            # center has not been initialized yet
-            if self.center == -1:
-                return False
-
-            # center has not been initialized yet
-            if self.center == -1:
-                return False
-
-            center = [self.center[0] - self.corners[0][0], self.center[1] - self.corners[0][1]]
-            walkout = self.walkout
-            walkout.reset(center)
-            fit_product = 1
-            if walkout.walkout():
-
-
-                fit_product = self.fit_model
-
-                if fit_product.fit(walkout.rx, walkout.ry):
-                    ellipse = fit_product
-                else:
-                    ellipse = 0
-            else:
-                ellipse = 0
-
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return False
-
-        if ellipse == fit_product:
-
-            center, width, height = ellipse.center, ellipse.width, ellipse.height
-            if width * height > 4:
-                # if self.type == 2:
-                #     if distance(np.array(center), np.array(self.center)) > 6: #normalize qqqq
-                #         self.center = self.original_center[self.center_index]
-                #         self.corners        =   self.standard_corners.copy()
-                #         return False
-
-                self.ellipse = ellipse
-                self.center = center
-
-                # "walkout_offset" defines the walkout offset for the next frame.
-                # The multiplication factor, here .4, returns slightly below the average.
-                #self.walkout_offset = int(.4 * (width + height))
-
-                self.margin = np.amax(ellipse.dimensions_int) * 2
-                center_int = tuple_int(center)
-
-                self.corners[0] = (max(center_int[0] - self.margin, 0), max(center_int[1] - self.margin, 0))
-                self.corners[1] = (min(center_int[0] + self.margin, config.engine.width),
-                                   min(center_int[1] + self.margin, config.engine.height))
-
-                self.center_index = 0
-
-                #margin = to_int(np.amax(ellipse.dimensions_int) * 1)
-
-                # self.bbox = (max(center_int[0] - margin, 0),  max(center_int[1] - margin, 0), margin * 2, margin * 2)
-
-                # try:
-                #     if self.bbox:
-                #         (success, box) = self.tracker.update(self.source)
-                #         if success:
-                #             box=np.array(box, dtype=int)
-                #             x,y,w,h = box
-                #
-                #             cv2.rectangle(self.source,(x,y),(x+w,y+h),(0,255,0),1)
-                #             #cv2.rectangle(self.source, box, (0,255,0),1)
-                #             cv2.imshow("Kk", self.source)
-                #         #cv2.waitKey(0)
-                #         #print(box)
-                # except Exception as e:
-                #     print(e)
-                #     pass
-
-                return True
-
-        if last:
-            return False
-        #   Shape detection failed, try contour detection
-        self.corners = self.standard_corners.copy()
-        self.walkout_offset = 0
-        self.refresh_source(self.source)
-        contours, hierarchy = cv2.findContours(self.area, 1, 2)
-        if len(contours) > 0:
-            dists = np.zeros(len(contours))
-            for i, cnt in enumerate(contours):
-
-                M = cv2.moments(cnt)
-                try:
-                    cx = int(M['m10'] / M['m00'])
-                    cy = int(M['m01'] / M['m00'])
-                    if self.type == 1:
-                        dists[i] = np.mean(self.source[cy - 2:cy + 2, cx - 2:cx + 2])
-                    else:
-
-                        dists[i] = np.sqrt((cx - self.center[0]) ** 2 + (cy - self.center[1]) ** 2)
-
-                except:
-                    dists[i] = 255
-
-            from operator import itemgetter
-            # todo: score these based on 1) color and 2) distance to center
-            M = cv2.moments(contours[min(enumerate(dists), key=itemgetter(1))[0]])
-            try:
-                cx = round(M['m10'] / M['m00'])
-                cy = round(M['m01'] / M['m00'])
-            except:
-
-                return False
-            # print(cx,cy)
-            self.center = (cx, cy)
-            return self.track(True)
-
-        return False
-
-
-stdthres = 1
-center_stdthres = .95
-
-
-class Contour:
-
-    def __init__(self, processor, type):
-        self.time = time.time()
-
-        self.processor = processor
-        if type == 2:
-            self.filter = lambda a, b, c, _: (a, b, c)
-        else:
-            if processor.model == "circular":
-                self.filter = self.circular_filter
-            else:
-                self.filter = self.ellipsoid_filter
-
-    def reset(self, center):
-        self.center = center
-        self.rx = -1
-        self.ry = -1
-        self.fit = -1
-
-    def ellipsoid_filter(self, x, y, coord_length, step_list):
-        # REVISE THIS QQQQ
-        neighbor_distances = np.abs(np.diff(step_list))
-
-        neighbor_std = np.std(neighbor_distances)
-        neighbor_mean = np.mean(neighbor_distances)
-
-        lowerlimit = max(neighbor_mean - neighbor_std * stdthres, 0)
-        upperlimit = max(neighbor_mean + neighbor_std * stdthres, 2)
-
-        # print(lowerlimit, upperlimit, neighbor_distances)
-
-        for i, distance in enumerate(neighbor_distances):
-            if distance > upperlimit:
-                coord_length -= 1
-                x[i] = 0
-                y[i] = 0
-
-        return x, y, coord_length
-
-    def circular_filter(self, x, y, coord_length, step_list):
-
-        center_std = max(np.ceil(np.std(step_list) * center_stdthres), 3)
-        center_mean = int(np.mean(step_list))
-
-        lowerlimit = center_mean - center_std
-        upperlimit = center_mean + center_std
-
-        for i, step in enumerate(step_list):
-            if ~(lowerlimit < step < upperlimit):
-                coord_length -= 1
-                x[i] = 0
-                y[i] = 0
-        return x, y, coord_length
-
-    def walkout(self, total_n=0):
-        """
-        Points are iteratively translated centrifugally to a limit,
-        and in an equally distributed manner (θ=360/n) from a center.
-        Notably, n is offset based on the width and height of the previously detected ellipsoid.
-
-        Similar to what was described by Sakatani and Isa (2004).
-        """
-
-    #    x = point_source.copy()
-        #y = point_source.copy()
-    #    step_list = step_list_source.copy()
-        #self.time = time.time()
-        #rx = rr_stock.copy()
-        #ry = rr_stock.copy()
-
-
-        #print(self.processor.area.shape, self.center)
-        #canvas_rgb = cv2.cvtColor(self.processor.area, cv2.COLOR_GRAY2RGB)
-        canvas = self.processor.area.copy()
-        center = np.array(self.center, dtype=int)
-
-        #0.00057
-
-        rx = rr_stock.copy()
-        ry = rx.copy()
 
         canvas_ = canvas[center[1]:, center[0]:]
+        canv_shape0, canv_shape1 = canvas_.shape
+        crop_canvas = np.flip(canvas[:center[1], :center[0]])
+        crop_canv_shape0, crop_canv_shape1 = crop_canvas.shape
 
-        crop_ = np.argmax(canvas_[:, 0] == 0) - 1
-        #canvas_rgb[crop_ + center[1], center[0]] = [0,0,255]
-        ry[0], rx[0] = crop_ + center[1], center[0]
+        crop_canvas2 = np.fliplr(canvas[center[1]:, :center[0]])
+        crop_canv2_shape0, crop_canv2_shape1 = crop_canvas2.shape
 
-        crop_ = np.argmax(canvas_[0, :] == 0) - 1
-        #canvas_rgb[center[1], crop_ + center[0]] = [0,0,255]
-        ry[1], rx[1] = center[1], crop_ + center[0]
+        crop_canvas3 = np.flipud(canvas[:center[1], center[0]:])###
+        crop_canv3_shape0, crop_canv3_shape1 = crop_canvas3.shape
 
-        #diagonal
-        crop_canvas = canvas[center[1]:, center[0]:]
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]
-        crop_ = np.argmax(crop_canvas[diag_matrix] == 0) - 1
-        #canvas_rgb[center[1] + crop_, center[0] + crop_] = [0,0,255]
-        ry[2], rx[2] = center[1] + crop_, center[0] + crop_
-
-        crop_canvas =np.flip(canvas[:center[1], :center[0]])
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]
-        crop_ = np.argmax(crop_canvas[diag_matrix] == 0)
-
-        #canvas_rgb[center[1] - crop_, center[0] - crop_] = [0,0,255]
-        ry[3], rx[3] = center[1] - crop_, center[0] - crop_
-
-        crop_canvas = np.fliplr(canvas[center[1]:, :center[0]])
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]
-        crop_ = np.argmax(crop_canvas[diag_matrix] == 0)
-
-        #canvas_rgb[center[1] + crop_, center[0] - crop_] = [0,0,255]
-        ry[4], rx[4] = center[1] + crop_, center[0] - crop_
-
-        crop_canvas =np.flipud(canvas[:center[1], center[0]:])###
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]
-        crop_ = np.argmax(crop_canvas[diag_matrix] == 0)
-
-        #canvas_rgb[center[1] - crop_, center[0] + crop_] = [0,0,255]
-        ry[5], rx[5] = center[1] - crop_, center[0] + crop_
-
-        M = cv2.getRotationMatrix2D(tuple(center), -22.5, 1)
-
-        #rot_canvas = rotate_around_point_highperf(canvas, np.radians(22.5), center)
-        #rot_canvas = ndimage.rotate(canvas, -22.5, reshape=False)
-
-        rot_canvas = cv2.warpAffine(canvas, M, canvas.shape,  flags=cv2.INTER_NEAREST)
-        #print(time.time()-self.time)
-        #print(rot_canvas.shape)
-        rot_canvas_ = rot_canvas[center[1]:, center[0]:]
-
-        crop_ = np.argmax(rot_canvas_[:, 0] == 0) - 1
-        #canvas_rgb[to_int(cos_angle_p225 * crop_) + center[1], center[0] + to_int(sin_angle_p225 * crop_)] = [0,0,255] #clean
-        ry[6], rx[6] = to_int(cos_angle_p225 * crop_) + center[1], center[0] + to_int(sin_angle_p225 * crop_)
-
-        crop_ = np.argmax(rot_canvas_[0, :] == 0) - 1
-        #canvas_rgb[to_int(cos_angle_p225p90 * crop_) + center[1], center[0] + to_int(sin_angle_p225p90 * crop_)] = [0,0,255]# #clean
-        ry[7], rx[7] = to_int(cos_angle_p225p90 * crop_) + center[1], center[0] + to_int(sin_angle_p225p90 * crop_)
-
-        #----  diagnonal rot
-        crop_canvas = rot_canvas_
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
-        crop_ = (np.argmax(crop_canvas[diag_matrix] == 0) - 1) * sqrt_two
-        diag_matrix1 = diag_matrix.copy()
-        #canvas_rgb[to_int(cos_angle_p225p45 * crop_) + center[1], center[0] + to_int(sin_angle_p225p45 * crop_)] = [0,0,255] #clean
-        ry[8], rx[8] = to_int(cos_angle_p225p45 * crop_) + center[1], center[0] + to_int(sin_angle_p225p45 * crop_)
-
-        crop_canvas = np.flip(rot_canvas[:center[1], :center[0]])
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
-
-        crop_ = np.argmax(crop_canvas[diag_matrix] == 0) * sqrt_two
-
-        #canvas_rgb[-to_int(cos_angle_p225p45 * crop_) + center[1], center[0] - to_int(sin_angle_p225p45 * crop_)] = [0,0,255] #clean
-        ry[9], rx[9] = -to_int(cos_angle_p225p45 * crop_) + center[1], center[0] - to_int(sin_angle_p225p45 * crop_)
-
-        crop_canvas =np.fliplr(rot_canvas[center[1]:, :center[0]])
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
-        crop_ = (np.argmax(crop_canvas[diag_matrix] == 0)) * sqrt_two
-
-        #canvas_rgb[to_int(cos_angle_p225m45 * crop_) + center[1], center[0] + to_int(sin_angle_p225m45 * crop_)] = [0,0,255] #clean
-        ry[10], rx[10] = to_int(cos_angle_p225m45 * crop_) + center[1], center[0] + to_int(sin_angle_p225m45 * crop_)
-
-        crop_canvas =np.flipud(rot_canvas[:center[1], center[0]:])###
-        diag_matrix = master_eye[:crop_canvas.shape[0], :crop_canvas.shape[1]]#np.eye(crop_canvas.shape[0], crop_canvas.shape[1], dtype=bool)
-        crop_ = np.argmax(crop_canvas[diag_matrix] == 0) * sqrt_two
-
-        #canvas_rgb[-to_int(cos_angle_p225m45 * crop_) + center[1], center[0] - to_int(sin_angle_p225m45 * crop_)] = [0,0,255] #clean
-        ry[11], rx[11] = -to_int(cos_angle_p225m45 * crop_) + center[1], center[0] - to_int(sin_angle_p225m45 * crop_)
-
-        #canvas_rgb[center[1],center[0]] = [0,0,255]
-        rot_canvas = np.flip(rot_canvas)
-
-        crop_ = np.argmax(rot_canvas[-center[1] - 1:, -center[0] - 1] == 0) - 1
-        #canvas_rgb[-to_int(cos_angle_p225 * crop_) + center[1], center[0] - to_int(sin_angle_p225 * crop_)] = [0,0,255] #clean
-        ry[12], rx[12] = -to_int(cos_angle_p225 * crop_) + center[1], center[0] - to_int(sin_angle_p225 * crop_)
-
-        crop_ = np.argmax(rot_canvas[-center[1] - 1, -center[0] - 1:] == 0) - 1
-        #canvas_rgb[-to_int(cos_angle_p225p90 * crop_) + center[1], center[0] - to_int(sin_angle_p225p90 * crop_)] = [0,0,255] #clean
-        ry[13], rx[13] = -to_int(cos_angle_p225p90 * crop_) + center[1], center[0] - to_int(sin_angle_p225p90 * crop_)
-
-        canvas = np.flip(canvas) # flip once
-
-        crop_ = np.argmax(canvas[-center[1] - 1, -center[0] - 1:] == 0) - 1
-        #canvas_rgb[center[1], -crop_ + center[0]] = [0,0,255]
-        ry[14], rx[14] = center[1], -crop_ + center[0]
-
-        crop_ = np.argmax(canvas[-center[1] - 1:, -center[0] - 1] == 0) - 1
-        #canvas_rgb[-crop_ + center[1], center[0]] = [0,0,255]
-        ry[15], rx[15] = -crop_ + center[1], center[0]
-
-        #cv2.imshow("test_canvas", canvas_rgb)
-
-        #cv2.waitKey(0)
-        self.rx, self.ry = rx[(0 != rx)], ry[(0 != ry)]
-        #print(f"processing duration: {time.time() - self.time} secs")
-        return True
+        canvas2 = np.flip(canvas) # flip once
 
 
-        offset = self.processor.walkout_offset
-        b = 0
-        for i, cos_sin in enumerate(cos_sin_steps):
+        crop_list=np.array(np.argmax(np.array(
+        [
+        canvas_[:, 0][self.min_radius:self.max_radius] == 0, canvas_[0, :][self.min_radius:self.max_radius] == 0,canvas_[main_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas[main_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[main_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas3[main_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,canvas2[-center[1], -center[0]:][self.min_radius:self.max_radius] == 0,canvas2[-center[1]:, -center[0]][self.min_radius:self.max_radius] == 0,
+        canvas_[ half_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas[half_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[half_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas3[half_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,canvas_[invhalf_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas[invhalf_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[invhalf_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas3[invhalf_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,canvas_[fourth_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas3[fourth_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas[fourth_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[fourth_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,canvas_[invfourth_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas2[invfourth_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas[invfourth_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas3[invfourth_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,
+        canvas_[third_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[third_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas[third_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas3[third_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,canvas_[invthird_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[invthird_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,
+        crop_canvas[invthird_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas3[invthird_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0
+        ], dtype = bool
+        ), axis=1),dtype=int) + self.min_radius
 
-            cos, sin = cos_sin
 
-            x[i] = self.center[0] + cos * offset
-            y[i] = self.center[1] + sin * offset
+        #simple:
 
-            insidemark = False
-            #0.001095056533813476 versus 0.000908613204956054
-            for _ in limit:
-                b += 1
-                # If walkout coordinate hits out-of-contour area, break out of the loop.
-                try:
-                    pixel = self.processor.area[to_int(y[i]), to_int(x[i])]
+        r[:8,:] = center
+        r[ry_add, 1] += crop_list[ry_add]
+        r[rx_add, 0] += crop_list[rx_add]
+        r[ry_subtract, 1] -= crop_list[ry_subtract] #
+        r[rx_subtract, 0] -= crop_list[rx_subtract]
+        r[rx_multiplied, 0] *= rx_multiply
+        r[ry_multiplied, 1] *= ry_multiply
+        r[8:,:] += center
 
-                    if pixel != 255:
-                        if pixel == 100:  # inside mark
-                            if insidemark == False:
-                                lastcoord = x[i], y[i]
-                                insidemark = True
 
-                        else:
-                            if insidemark:
-                                x[i], y[i] = lastcoord
+        # try:
+        #    canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
+        #    cy, cx = np.mean(ry, dtype=int), np.mean(rx, dtype=int)
+        #    canvas_rgb[cy,cx] = [0,0,255]
+        #    canvas_rgb[ry.astype("int"), rx.astype("int")] = [0,0,255]
+        #    canvas_rgb[center[1], center[0]] = [255,0,0]
+        #    rx1,ry1 = self.cond(rx, ry, crop_list)
+        #    canvas_rgb[ry1.astype("int"), rx1.astype("int")] = [0,255,0]
+        #    cv2.imshow("JJJ", canvas_rgb)
+        #    cv2.waitKey(5)
+        # except Exception as e:
+        #    print(e)
 
-                            break
-                    else:
-                        insidemark = False
 
-                except:
-                    # Walkout hit outside of Processor area. Go back to previous in-bounds point, then break.
-                    x[i] -= cos
-                    y[i] -= sin
-                    step_list[i] -= 1
-                    break
+        return self.cond(r, crop_list)#rx[cond_], ry[cond_]#rx, ry
 
-                x[i] += cos
-                y[i] += sin
-                step_list[i] += 1
+    def cr_walkout(self):
 
-        coord_length = len(x)
 
-        if b <= len(x) + 2:
-            return False
+        #diag_matrix = main_diagonal[:canvas_.shape[0], :canvas_.shape[1]]
 
-        if coord_length < 5:
-            return False
+        try:
+            center = np.array(self.center, dtype=int)
+        except:
+            #nonetype
 
-        x, y, coord_length = self.filter(x, y, coord_length, step_list)
+            return
+        #canvas = np.array(self.source, dtype=int)#.copy()
 
-        if coord_length < 4:
-            return False
+        r = rr_2d_cr.copy()
 
-        self.rx, self.ry = x[(0 != x)], y[(0 != y)]
-        #print(len(self.rx))
-        return True
+
+        crop_list = crop_stock_cr.copy()
+        #rx = np.zeros(4)
+        #ry = np.zeros(4)
+
+        canvas_ = self.source[center[1]:, center[0]:]
+
+        crop_list[0] = np.argmax(canvas_[:, 0] == 0) #- 1
+        #crop_ = np.argmax(canvas_[:, 0] == 0) #- 1
+
+        #ry[0], rx[0] = crop_ + center[1], center[0]
+
+
+        crop_list[2] = np.argmax(canvas_[0, :] == 0) #- 1
+        #crop_ = np.argmax(canvas_[0, :] == 0) #- 1
+
+    #    ry[2], rx[2] = center[1], crop_ + center[0]
+
+
+        canvas = np.flip(self.source) # flip once
+
+        crop_list[3] = -np.argmax(canvas[-center[1], -center[0]:] == 0)# - 1
+        #crop_ = np.argmax(canvas[-center[1], -center[0]:] == 0)# - 1
+
+        #ry[3], rx[3] = center[1], -crop_ + center[0]
+
+
+        crop_list[1]= -np.argmax(canvas[-center[1]:, -center[0]] == 0) #- 1
+    #    crop_ = np.argmax(canvas[-center[1]:, -center[0]] == 0)
+
+        #ry[1], rx[1] = -crop_ + center[1], center[0]
+        #print()
+
+        #print(r, crop_list)
+        r[:,:] = center
+        r[:2, 1] += crop_list[:2]
+        r[2:, 0] += crop_list[2:]
+        #print(r, rx, ry)
+
+        # try:
+        #
+        #    canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
+        #
+        #   # canvas_rgb[cy,cx] = [0,0,255]
+        #    canvas_rgb[ry.astype("int"), rx.astype("int")] = [0,255,0]
+        #    canvas_rgb[r[:,1].astype("int"), r[:,0].astype("int")] = [0,0,255]
+        #    #canvas_rgb[center[1], center[0]] = [255,0,0]
+        #    #rx1,ry1 = self.cond(rx, ry, crop_list)
+        #   # canvas_rgb[ry1.astype("int"), rx1.astype("int")] = [0,255,0]
+        #    cv2.imshow("JJJ", canvas_rgb)
+        #    cv2.waitKey(5)
+        # except Exception as e:
+        #    print(e)
+
+        return r#rx[cond_], ry[cond_]#rx, ry

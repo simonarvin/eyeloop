@@ -40,9 +40,8 @@ class Importer(IMPORTER):
 
         # image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
 
-        image = self.rotate(image, config.engine.angle)
-
         image = self.resize(image)
+        self.rotate_(image, config.engine.angle)
         config.engine.update_feed(image)
         self.save(image)
 

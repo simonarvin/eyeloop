@@ -6,10 +6,14 @@ import numpy as np
 import eyeloop.config as config
 from eyeloop.constants.minimum_gui_constants import *
 from eyeloop.utilities.general_operations import to_int, tuple_int
+import threading
 
+import logging
+logger = logging.getLogger(__name__)
 
 class GUI:
     def __init__(self) -> None:
+
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
         tool_tip_dict = ["tip_1_cr", "tip_2_cr", "tip_3_pupil", "tip_4_pupil", "tip_5_start", "tip_1_cr_error", "",
@@ -20,8 +24,14 @@ class GUI:
         self._state = "adjustment"
         self.inquiry = "none"
         self.terminate = -1
-        self.update_track = self.real_update
+        self.update = self.adj_update#real_update
         self.skip = 0
+
+        self.pupil_ = lambda _: False
+        self.cr1_ = lambda _: False
+        self.cr2_ = lambda _: False
+
+
 
     def tip_mousecallback(self, event, x: int, y: int, flags, params) -> None:
         if event == cv2.EVENT_LBUTTONDOWN:
@@ -37,7 +47,7 @@ class GUI:
         self.cursor = (x, y)
 
     def release(self):
-        self.out.release()
+        #self.out.release()
         cv2.destroyAllWindows()
 
     def remove_mousecallback(self) -> None:
@@ -64,11 +74,13 @@ class GUI:
                 cv2.destroyWindow("BINARY")
                 cv2.destroyWindow("Tool tip")
 
-                cv2.imshow("TRACKING", self.PStock)
+                cv2.imshow("TRACKING", self.bin_stock)
                 cv2.moveWindow("TRACKING", 100, 100)
 
                 self._state = "tracking"
                 self.inquiry = "none"
+
+                self.update = self.real_update
 
                 config.engine.activate()
 
@@ -81,66 +93,47 @@ class GUI:
 
         if self._state == "adjustment":
             if key == "p":
-                config.engine.angle -= 5
+                config.engine.angle -= 3
 
             elif key == "o":
-                config.engine.angle += 5
-
-            elif key == "b":
-
-                config.engine.marks.append(self.cursor)
-
-            elif key == "v":
-                try:
-                    config.engine.marks.pop()
-                except:
-                    # empty list
-                    pass
+                config.engine.angle += 3
 
             elif "1" == key:
                 try:
-                    config.engine.pupil = self.cursor
-                    self.pupil_processor.reset(self.cursor, np.mean(
-                        config.engine.source[self.cursor[1] - 1:self.cursor[1] + 1,
-                        self.cursor[0] - 1:self.cursor[0] + 1]))
+                    #config.engine.pupil = self.cursor
+                    self.pupil_processor.reset(self.cursor)
+                    self.pupil_ = self.pupil
 
-                    config.engine.refresh_pupil = self.pupil_processor.refresh_source
-                    # self.pupil_processor.track()
                     self.update_tool_tip(4)
 
-                    print("\nPupil selected.")
-                    print("Adjust binarization via R/F (threshold) and T/G (smoothing).")
+                    print("Pupil selected.\nAdjust binarization via R/F (threshold) and T/G (smoothing).")
                 except Exception as e:
-                    print(e)
                     self.update_tool_tip(3, True)
-                    print("Try again: Hover and click on the pupil, then press 1.")
+                    logger.info(f"pupil selection failed; {e}")
 
             elif "2" == key:
                 try:
 
-                    self.current_cr_processor = config.engine.cr_processors[0]
+                    self.cr_processor_1.reset(self.cursor)
+                    self.cr1_ = self.cr_1
 
-                    self.current_cr_processor.reset(self.cursor, np.mean(
-                        config.engine.source[self.cursor[1] - 1:self.cursor[1] + 1,
-                        self.cursor[0] - 1:self.cursor[0] + 1]))
+                    self.current_cr_processor = self.cr_processor_1
 
                     self.update_tool_tip(2)
 
-                    print("\nCorneal reflex selected.")
-                    print("Adjust binarization via W/S (threshold) and E/D (smoothing).")
+                    print("Corneal reflex selected.\nAdjust binarization via W/S (threshold) and E/D (smoothing).")
 
-                except:
+                except Exception as e:
                     self.update_tool_tip(1, True)
-                    print("Hover and click on the corneal reflex, then press 2.")
+                    logger.info(f"CR selection failed; {e}")
 
             elif "3" == key:
                 try:
                     self.update_tool_tip(2)
-                    self.current_cr_processor = config.engine.cr_processors[1]
+                    self.cr_processor_2.reset(self.cursor)
+                    self.cr2_ = self.cr_2
 
-                    self.current_cr_processor.reset(self.cursor, np.mean(
-                        config.engine.source[self.cursor[1] - 1:self.cursor[1] + 1,
-                        self.cursor[0] - 1:self.cursor[0] + 1]))
+                    self.current_cr_processor = self.cr_processor_2
 
                     print("\nCorneal reflex selected.")
                     print("Adjust binarization via W/S (threshold) and E/D (smoothing).")
@@ -149,21 +142,6 @@ class GUI:
                     self.update_tool_tip(1, True)
                     print("Hover and click on the corneal reflex, then press 3.")
 
-            elif "4" == key:
-                try:
-                    self.update_tool_tip(2)
-                    self.current_cr_processor = config.engine.cr_processors[2]
-
-                    self.current_cr_processor.reset(self.cursor, np.mean(
-                        config.engine.source[self.cursor[1] - 1:self.cursor[1] + 1,
-                        self.cursor[0] - 1:self.cursor[0] + 1]))
-
-                    print("\nCorneal reflex selected.")
-                    print("Adjust binarization via W/S (threshold) and E/D (smoothing).")
-
-                except:
-                    self.update_tool_tip(1, True)
-                    print("Hover and click on the corneal reflex, then press 4.")
 
             elif "z" == key:
                 print("Start tracking? (y/n)")
@@ -181,12 +159,12 @@ class GUI:
 
             elif "e" == key:
 
-                self.current_cr_processor.blur += 2
+                self.current_cr_processor.blur = tuple([x + 2 for x in self.cr_processor.blur])
                 # print("Corneal reflex blurring increased (%s)." % self.CRProcessor.blur)
 
             elif "d" == key:
 
-                self.current_cr_processor.blur -= 2
+                self.current_cr_processor.blur -= tuple([x - 2 for x in self.cr_processor.blur])
                 # print("Corneal reflex blurring decreased (%s)." % self.CRProcessor.blur)
 
             elif "r" == key:
@@ -198,12 +176,12 @@ class GUI:
 
             elif "t" == key:
 
-                self.pupil_processor.blur += 2
+                self.pupil_processor.blur = tuple([x + 2 for x in self.pupil_processor.blur])
                 # print("Pupil blurring increased (%s)." % self.pupil_processor.blur)
 
             elif "g" == key:
 
-                self.pupil_processor.blur -= 2
+                self.pupil_processor.blur = tuple([x - 2 for x in self.pupil_processor.blur])
                 # print("Pupil blurring decreased (%s)." % self.pupil_processor.blur)
 
         if "q" == key:
@@ -211,16 +189,14 @@ class GUI:
             config.engine.release()
 
     def arm(self, width: int, height: int) -> None:
+        self.fps = np.round(1/config.arguments.fps, 2)
 
         self.pupil_processor = config.engine.pupil_processor
 
         self.cr_index = 0
-        self.current_cr_processor = config.engine.cr_processors[0]  # primary corneal reflection
-
-        if config.arguments.markers == False:
-            self.place_markers = lambda: None
-        else:
-            self.place_markers = self.rplace_markers
+        self.current_cr_processor = config.engine.cr_processor_1  # primary corneal reflection
+        self.cr_processor_1 = config.engine.cr_processor_1
+        self.cr_processor_2 = config.engine.cr_processor_2
 
         self.width, self.height = width, height
         self.binary_width = max(width, 300)
@@ -228,10 +204,12 @@ class GUI:
 
         fourcc = cv2.VideoWriter_fourcc(*'MPEG')
         output_vid = Path(config.file_manager.new_folderpath, "output.avi")
-        self.out = cv2.VideoWriter(str(output_vid), fourcc, 50.0, (self.width, self.height))
+        #self.out = cv2.VideoWriter(str(output_vid), fourcc, 50.0, (self.width, self.height))
 
-        self.PStock = np.zeros((self.binary_height, self.binary_width))
-        self.CRStock = self.PStock.copy()
+        self.bin_stock = np.zeros((self.binary_height, self.binary_width))
+        self.bin_P = self.bin_stock.copy()
+        self.bin_CR = self.bin_stock.copy()
+        #self.CRStock = self.bin_stock.copy()
 
         self.src_txt = np.zeros((20, width, 3))
         self.prev_txt = self.src_txt.copy()
@@ -239,27 +217,27 @@ class GUI:
         cv2.putText(self.prev_txt, 'Preview', (15, 12), font, .7, (255, 255, 255), 0, cv2.LINE_4)
         cv2.putText(self.prev_txt, 'EyeLoop', (width - 50, 12), font, .5, (255, 255, 255), 0, cv2.LINE_8)
 
-        self.pstock_txt = np.zeros((20, self.binary_width))
-        self.pstock_txt_selected = self.pstock_txt.copy()
-        self.crstock_txt = self.pstock_txt.copy()
+        self.bin_stock_txt = np.zeros((20, self.binary_width))
+        self.bin_stock_txt_selected = self.bin_stock_txt.copy()
+        self.crstock_txt = self.bin_stock_txt.copy()
         self.crstock_txt[0:1, 0:self.binary_width] = 1
         self.crstock_txt_selected = self.crstock_txt.copy()
 
-        cv2.putText(self.pstock_txt, 'P | R/F | T/G || bin/blur', (10, 15), font, .7, 1, 0, cv2.LINE_4)
-        cv2.putText(self.pstock_txt_selected, '(*) P | R/F | T/G || bin/blur', (10, 15), font, .7, 1, 0, cv2.LINE_4)
+        cv2.putText(self.bin_stock_txt, 'P | R/F | T/G || bin/blur', (10, 15), font, .7, 1, 0, cv2.LINE_4)
+        cv2.putText(self.bin_stock_txt_selected, '(*) P | R/F | T/G || bin/blur', (10, 15), font, .7, 1, 0, cv2.LINE_4)
 
         cv2.putText(self.crstock_txt, 'CR | W/S | E/D || bin/blur', (10, 15), font, .7, 1, 0, cv2.LINE_4)
         cv2.putText(self.crstock_txt_selected, '(*) CR | W/S | E/D || bin/blur', (10, 15), font, .7, 1, 0, cv2.LINE_4)
 
-        cv2.imshow("CONFIGURATION", np.hstack((self.PStock, self.PStock)))
-        cv2.imshow("BINARY", np.vstack((self.PStock, self.PStock)))
+        cv2.imshow("CONFIGURATION", np.hstack((self.bin_stock, self.bin_stock)))
+        cv2.imshow("BINARY", np.vstack((self.bin_stock, self.bin_stock)))
 
         cv2.moveWindow("BINARY", 105 + width * 2, 100)
         cv2.moveWindow("CONFIGURATION", 100, 100)
 
         cv2.imshow("Tool tip", self.first_tool_tip)
 
-        cv2.moveWindow("Tool tip", 100, 100 + height + 100)
+        cv2.moveWindow("Tool tip", 100, 1000 + height + 100)
         try:
             cv2.setMouseCallback("CONFIGURATION", self.mousecallback)
             cv2.setMouseCallback("Tool tip", self.tip_mousecallback)
@@ -273,145 +251,84 @@ class GUI:
         except:
             pass
 
-    def rplace_markers(self, source: np.ndarray) -> None:
-        for i, mark in enumerate(config.engine.marks):
-            self.place_cross(source, mark, blue)
-            if (i % 2) == 0:
-                try:
-                    self.place_cross(source, config.engine.marks[i + 1], pink)
-                    cv2.rectangle(source, mark, config.engine.marks[i + 1], blue)
-                except:
-                    # odd number of marks
-                    break
 
     def update_record(self, frame_preview) -> None:
         cv2.imshow("Recording", frame_preview)
         if cv2.waitKey(1) == ord('q'):
             config.engine.release()
 
-    def skip_track(self, _):
-        if self.skip == 100:
-            self.skip = 0
-            self.update_track = self.real_update
-            return
-        self.skip += 1
+    def skip_track(self):
+        self.update = self.real_update
 
-    def real_update(self, blink: int) -> None:
-        frame_preview = cv2.cvtColor(config.engine.source, cv2.COLOR_GRAY2BGR)
-        frame_source = frame_preview.copy()
-        cr_width = pupil_width = -1
-        Processor = self.pupil_processor
-        if blink == 0:
 
-            self.rplace_markers(frame_preview)
-            for index, cr_processor in enumerate(config.engine.cr_processors):
-                if cr_processor.active:
+    def pupil(self, source_rgb):
+        try:
+            pupil_center, pupil_width, pupil_height, pupil_angle = params = self.pupil_processor.fit_model.params
 
-                    cr_corners = cr_processor.corners
-                    cr_center, cr_width, cr_height, cr_angle, cr_dimensions_int = cr_processor.ellipse.parameters()
+            cv2.ellipse(source_rgb, tuple_int(pupil_center), tuple_int((pupil_width, pupil_height)), pupil_angle, 0, 360, red, 1)
+            self.place_cross(source_rgb, pupil_center, red)
+            return True
+        except Exception as e:
+            logger.info(e)
+            return False
 
-                    if self._state == "adjustment":
-                        if cr_processor == self.current_cr_processor:
-                            color = bluish
-                        else:
-                            color = green
-                        try:
+    def cr_1(self, source_rgb):
+        try:
+            #cr_center, cr_width, cr_height, cr_angle = params = self.cr_processor_1.fit_model.params
 
-                            cv2.ellipse(frame_preview, tuple_int(cr_center), cr_dimensions_int, cr_angle, 0, 360, color,
-                                        1)
-                            self.place_cross(frame_preview, cr_center, color)
-                            cv2.rectangle(frame_preview, cr_corners[0], cr_corners[1], color)
+            #cv2.ellipse(source_rgb, tuple_int(cr_center), tuple_int((cr_width, cr_height)), cr_angle, 0, 360, green, 1)
+            self.place_cross(source_rgb, self.cr_processor_1.center, green)
+            return True
+        except Exception as e:
+            logger.info(f"cr1 func: {e}")
+            return False
 
-                            cv2.putText(frame_preview, "{}".format(index + 2),
-                                        (int((cr_corners[1][0] + cr_corners[0][0]) * .5 - 3), cr_corners[0][1] - 3),
-                                        font, .7, color, 0, cv2.LINE_4)
-                        except Exception as e:
-                            cr_processor.active = False
+    def cr_2(self, source_rgb):
+        try:
+            #cr_center, cr_width, cr_height, cr_angle = params = self.cr_processor_2.fit_model.params
 
-                    else:
-                        self.place_cross(frame_preview, cr_center, bluish)
+            #cv2.ellipse(source_rgb, tuple_int(cr_center), tuple_int((cr_width, cr_height)), cr_angle, 0, 360, green, 1)
+            self.place_cross(source_rgb, self.cr_processor_1.center, green)
+            return True
+        except Exception as e:
+            logger.info(f"cr2 func: {e}")
+            return False
 
-            try:
+    def adj_update(self, img):
+        source_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-                pupil_corners = Processor.corners
-                pupil_center, pupil_width, pupil_height, pupil_angle, pupil_dimensions_int = Processor.ellipse.parameters()
+        if self.pupil_(source_rgb):
+            self.bin_P = self.bin_stock.copy()
 
-                cv2.ellipse(frame_preview, tuple_int(pupil_center), pupil_dimensions_int, pupil_angle, 0, 360, red, 1)
-                self.place_cross(frame_preview, pupil_center, red)
-                cv2.rectangle(frame_preview, pupil_corners[0], pupil_corners[1], red)
-            except:
-                pass
+            #self.bin_CR = self.bin_stock.copy()
+            self.bin_P[0:20, 0:self.binary_width] = self.bin_stock_txt_selected
 
-        if self._state == "adjustment":
-            stock_P = self.PStock.copy()
-            stock_CR = self.CRStock.copy()
+            pupil_area = self.pupil_processor.source
 
-            if cr_width != -1:
+            offset_y = int((self.binary_height - pupil_area.shape[0]) / 2)
+            offset_x = int((self.binary_width - pupil_area.shape[1]) / 2)
+            self.bin_P[offset_y:min(offset_y + pupil_area.shape[0], self.binary_height),
+            offset_x:min(offset_x + pupil_area.shape[1], self.binary_width)] = pupil_area
 
-                cr_area = self.current_cr_processor.area
+        self.cr1_(source_rgb)
+        self.cr2_(source_rgb)
 
-                offset_y = int((self.binary_height - cr_area.shape[0]) / 2)
-                offset_x = int((self.binary_width - cr_area.shape[1]) / 2)
-                stock_CR[offset_y:min(offset_y + cr_area.shape[0], self.binary_height),
-                offset_x:min(offset_x + cr_area.shape[1], self.binary_width)] = cr_area
-                stock_CR[0:20, 0:self.binary_width] = self.crstock_txt_selected
-            else:
-                stock_CR[0:20, 0:self.binary_width] = self.crstock_txt
+        cv2.imshow("BINARY", np.vstack((self.bin_P, self.bin_CR)))
+        cv2.imshow("CONFIGURATION", source_rgb)
 
-            if pupil_width != -1:
-                # stock_P[pcorners[0][1]:pcorners[0][1]+Processor.area.shape[0],
-                # pcorners[0][0]:pcorners[0][0]+Processor.area.shape[1]] = Processor.area
-                stock_P[0:20, 0:self.binary_width] = self.pstock_txt_selected
+        self.key_listener(cv2.waitKey(50))
 
-                pupil_area = Processor.area
 
-                offset_y = int((self.binary_height - pupil_area.shape[0]) / 2)
-                offset_x = int((self.binary_width - pupil_area.shape[1]) / 2)
-                stock_P[offset_y:min(offset_y + pupil_area.shape[0], self.binary_height),
-                offset_x:min(offset_x + pupil_area.shape[1], self.binary_width)] = pupil_area
+    def real_update(self, img) -> None:
+        source_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        self.pupil_(source_rgb)
+        self.cr1_(source_rgb)
+        self.cr2_(source_rgb)
 
-            else:
-                stock_P[0:20, 0:self.binary_width] = self.pstock_txt
+        cv2.imshow("TRACKING", source_rgb)
 
-            cv2.putText(stock_P, "{} || {}".format(round(Processor.binarythreshold, 1), Processor.blur),
-                        (10, self.binary_height - 10), font, .7, 255, 0, cv2.LINE_4)
-            cv2.putText(stock_CR, "{} || {}".format(round(self.current_cr_processor.binarythreshold, 1),
-                                                    self.current_cr_processor.blur), (10, self.binary_height - 10),
-                        font, .7, 255, 0, cv2.LINE_4)
+        threading.Timer(self.fps, self.skip_track).start() #run feed every n secs (n=1)
+        self.update = lambda _: None
 
-            frame_source[0:20, 0:self.width] = self.src_txt
-            frame_preview[0:20, 0:self.width] = self.prev_txt
-            frame_preview[0:self.height, 0:1] = 0
-
-            cv2.putText(frame_source, "#" + str(config.importer.frame), (to_int(self.width / 2), 12), font, .7,
-                        (255, 255, 255), 0, cv2.LINE_4)
-            i = 0
-            while i < 5:
-                frame_source[to_int(self.height * i / 5) - 1:to_int(self.height * i / 5) + 1, 0:self.width] = (
-                    100, 100, 100)
-                i += 1
-
-            cv2.imshow("CONFIGURATION", np.hstack((frame_source, frame_preview)))
-            cv2.imshow("BINARY", np.vstack((stock_P, stock_CR)))
-
-            self.out.write(frame_preview)
-
-            self.key = cv2.waitKey(50)
-
-            if self.key == ord("-"):
-                cv2.imwrite("screen_cap_fr{}.jpg".format(config.importer.frame), frame_preview)
-
-            self.key_listener(self.key)
-
-        else:
-            # real tracking
-
-            self.out.write(frame_preview)
-
-            cv2.imshow("TRACKING", frame_preview)
-            self.update_track = self.skip_track
-
-            key = cv2.waitKey(1)
-
-            if key == ord("q"):
-                config.engine.release()
+        if cv2.waitKey(1) == ord("q"):
+            config.engine.release()

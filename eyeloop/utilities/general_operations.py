@@ -11,5 +11,3 @@ def to_int(non_int: float) -> int:
 
 def tuple_int(non_int: tuple) -> tuple:
     return tuple(int(element + 0.5) for element in non_int)
-
-

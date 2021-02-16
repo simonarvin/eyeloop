@@ -5,14 +5,13 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
 import os
+import numpy as np
 
 import eyeloop.config as config
 from eyeloop.engine.engine import Engine
 from eyeloop.extractors.DAQ import DAQ_extractor
 from eyeloop.extractors.frametimer import FPS_extractor
 
-
-from eyeloop.guis.minimum.minimum_gui import GUI
 from eyeloop.utilities.argument_parser import Arguments
 from eyeloop.utilities.file_manager import File_Manager
 from eyeloop.utilities.format_print import welcome
@@ -40,6 +39,25 @@ class EyeLoop:
         if logger is None:
             logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
 
+        if config.arguments.blink == 0:
+            self.run()
+        else:
+            self.test_blink()
+
+    def test_blink(self):
+        from eyeloop.guis.blink_test import GUI
+        config.graphical_user_interface = GUI()
+        config.engine = Engine(self)
+        self.run_importer()
+
+    def run(self):
+        try:
+            config.blink = np.load(f"{EYELOOP_DIR}/blink_.npy")[0] * .8
+        except:
+            print("\n(!) NO BLINK DETECTION. Run 'eyeloop --blink 1' to calibrate\n")
+
+
+        from eyeloop.guis.minimum.minimum_gui import GUI
         config.graphical_user_interface = GUI()
 
         config.engine = Engine(self)
@@ -48,7 +66,6 @@ class EyeLoop:
         data_acquisition = DAQ_extractor(config.file_manager.new_folderpath)
 
         file_path = config.arguments.extractors
-
 
         if file_path == "p":
             root = tk.Tk()
@@ -74,6 +91,9 @@ class EyeLoop:
 
         config.engine.load_extractors(extractors)
 
+        self.run_importer()
+
+    def run_importer(self):
         try:
             logger.info(f"Initiating tracking via Importer: {config.arguments.importer}")
             importer_module = importlib.import_module(f"eyeloop.importers.{config.arguments.importer}")
@@ -91,4 +111,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()

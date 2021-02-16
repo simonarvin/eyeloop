@@ -48,7 +48,20 @@ class Arguments:
                             help="Set file-path of extractor Python file. p = start file prompt.")
 
         parser.add_argument("-imgf", "--img_format", default="frame_$.jpg", type=str,
-                            help="Set file-path of extractor Python file. p = start file prompt.")
+                            help="Set img format for import (default: frame_$.jpg where $ = 1, 2,...)")
+
+        parser.add_argument("-sv", "--save", default=1, type=int,
+                            help="Save video feed or not (yes/no, 1/0; default = 1)")
+
+        parser.add_argument("-rt", "--rotation", default=0, type=int,
+                            help="Enable online rotation (yes/no, 1/0; default = 0)")
+
+
+        parser.add_argument("-fps", "--framerate", default=1, type=float,
+                            help="How often to update preview window  (default = 1/second)")
+
+        parser.add_argument("-b", "--blink", default=0, type=float,
+                            help="Run blink test (yes/no, 1/0)")
 
         return parser.parse_args(args)
 
@@ -68,6 +81,10 @@ class Arguments:
         self.bthreshold = parsed_args.bthreshold
         self.extractors = parsed_args.extractors
         self.img_format = parsed_args.img_format
+        self.save = parsed_args.save
+        self.rotation = parsed_args.rotation
+        self.fps = parsed_args.framerate
+        self.blink = parsed_args.blink
 
     def parse_config(self, config: str) -> None:
         with open(config, "r") as content:
@@ -104,4 +121,14 @@ class Arguments:
                 elif parameter == "img_format":
                     print("img_format preset: ", parameter)
                     self.img_format = parameter
+                elif parameter == "save":
+                    print("save preset: ", parameter)
+                    self.save = parameter
+                elif parameter == "rotation":
+                    print("rotation preset: ", parameter)
+                    self.rotation = parameter
+                elif parameter == "framerate":
+                    print("framerate preset: ", parameter)
+                    self.fps = parameter
+
             print("")
