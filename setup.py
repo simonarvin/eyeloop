@@ -21,7 +21,7 @@ setup(
     license_file='LICENSE',
     platforms='any',
     python_requires='>=3.7',
-    version='0.2',
+    version='0.3',
     entry_points={
         'console_scripts': [
             'eyeloop=eyeloop.run_eyeloop:main'
