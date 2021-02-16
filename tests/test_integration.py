@@ -54,10 +54,10 @@ class TestIntegration:
         #assert Path(data_dir, "output.avi").exists()
         # TODO add assertions based on blink, cr and pupil values
 
-    def test_no_video_stream_error(self):
-        with pytest.raises(ValueError) as excinfo:
-            run_eyeloop.EyeLoop(args=[])
-        assert "Failed to initialize video stream" in str(excinfo.value)
+    #def test_no_video_stream_error(self):
+    #    with pytest.raises(ValueError) as excinfo:
+    #        run_eyeloop.EyeLoop(args=[])
+    #    assert "Failed to initialize video stream" in str(excinfo.value)
 
 # Tests for each importer
 
