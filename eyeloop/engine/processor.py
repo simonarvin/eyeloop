@@ -8,7 +8,6 @@ from eyeloop.utilities.general_operations import to_int, tuple_int
 import time
 import logging
 
-from scipy.spatial.distance import cdist
 logger = logging.getLogger(__name__)
 
 """
