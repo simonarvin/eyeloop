@@ -15,13 +15,13 @@ TEST_VIDEOS = {  # Basic short videos to use for end to end testing
         "path": Path(TESTDATA_DIR, "short_human_3blink.mp4").absolute(),
         "animal": "human",
         "blinks": 3,
-        "n_frames": 282,
+        "n_frames": 285,
     },
     "short_mouse_noblink": {
         "path": Path(TESTDATA_DIR, "short_mouse_noblink.m4v").absolute(),
         "animal": "mouse",
         "blinks": 0,
-        "n_frames": 307,
+        "n_frames": 310,
     }
 }
 logger = logging.getLogger(__name__)
