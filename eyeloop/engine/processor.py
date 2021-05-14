@@ -57,6 +57,7 @@ class Shape():
         self.model = config.arguments.model
         self.type_entry = None
         self.track = lambda x:None
+        self.threshold = len(crop_stock) * 1.2
 
 
         if type == 1:
@@ -69,12 +70,13 @@ class Shape():
             else:
                 self.fit_model = Ellipse(self)
 
-            self.min_radius = 3
-            self.max_radius = 30 #change according to video size or argument
+            self.min_radius = 1
+            self.max_radius = 70 #change according to video size or argument
             self.cond = self.cond_
             #self.clip = lambda x:None
             self.clip = self.clip_
             self.center_adj = self.center_adj_
+
             self.walkout = self.pupil_walkout
         else:
             self.walkout = self.cr_walkout
@@ -114,30 +116,56 @@ class Shape():
         self.track = self.track_
 
         self.standard_corners = [(0, 0), (config.engine.width, config.engine.height)]
+
         self.corners = self.standard_corners.copy()
 
         #self.tracker = cv2.TrackerMedianFlow_create()
 
     def track_(self, source):
-
+        self.raw = source
         self.source = source.copy()
+
         #self.img = img
 
         # Performs a simple binarization and applies a smoothing gaussian kernel.
         self.thresh() #either pupil or cr
+
         self.fit_() #gets fit model
 
 
     def center_adj_(self):
-        return
-        #revise, todo
-        circles = cv2.HoughCircles(self.source, cv2.HOUGH_GRADIENT,1,20,
-                            param1=50,param2=30,minRadius=self.minRadius,maxRadius=self.maxRadius)
-        contour_center = config.engine.center
-        self.center = circles[0,0][:1]
+
+
+        #adjust settings:
+        circles = cv2.HoughCircles(self.raw, cv2.HOUGH_GRADIENT, 1, 10, param1=200, param2=10, minRadius=3, maxRadius=30)
+
+        if circles is None:
+            return
+        else:
+            smallest = -1
+            current = -1
+
+            for circle in circles[0, :]:
+                #print(circle[:2])
+
+                score = self.distance(circle[:2], self.center) +self.raw[int(circle[1]), int(circle[0])]
+
+                if smallest == -1:
+                    smallest = score
+                    current = circle[:2]
+                elif score < smallest:
+                    smallest = score
+                    current = circle[:2]
+                #self.center = circles[0,0][:1]
+            #print(tuple(current), self.center)
+
+            #print(smallest, current, self.center)
+            self.center = tuple(current)
 
 
 
+    def distance(self, a, b):
+        return np.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
 
     def artefact_(self, params):
         cv2.circle(config.engine.pup_source, tuple_int(params[0]), to_int(params[1] * self.expand), black, -1)
@@ -153,10 +181,12 @@ class Shape():
 
             config.engine.dataout[self.type_entry] = self.fit_model.params#params
         except IndexError:
+
             logger.info(f"fit indexrror")
             self.center_adj()
         except Exception as e:
             logger.info(f"fit-func error: {e}")
+            self.center_adj()
 
 
     def cond_(self, r, crop_list):
@@ -187,16 +217,19 @@ class Shape():
         #diag_matrix = main_diagonal[:canvas_.shape[0], :canvas_.shape[1]]
 
         try:
+
             center = np.array(self.center, dtype=int)
         except:
             #nonetype
 
             return
-        canvas = np.array(self.source, dtype=int)#.copy()
 
+        canvas = np.array(self.source, dtype=int)#.copy()
+        canvas[-1,:] =canvas[:,-1] = canvas[0,:] = canvas[:,0] = 0
         r = rr_2d.copy()
 
         crop_list = crop_stock.copy()
+
 
 
         canvas_ = canvas[center[1]:, center[0]:]
@@ -211,7 +244,6 @@ class Shape():
         crop_canv3_shape0, crop_canv3_shape1 = crop_canvas3.shape
 
         canvas2 = np.flip(canvas) # flip once
-
 
         crop_list=np.array(np.argmax(np.array(
         [
@@ -228,8 +260,11 @@ class Shape():
         crop_canvas3[third_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0,canvas_[invthird_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas2[invthird_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0,
         crop_canvas[invthird_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0,crop_canvas3[invthird_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0
         ], dtype = bool
-        ), axis=1),dtype=int) + self.min_radius
+        ), axis=1), dtype=int) + self.min_radius
 
+
+        if np.sum(crop_list) < self.threshold:
+            raise IndexError("Lost track, do reset")
 
         #simple:
 
@@ -243,6 +278,7 @@ class Shape():
         r[8:,:] += center
 
 
+            #return
         # try:
         #    canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
         #    cy, cx = np.mean(ry, dtype=int), np.mean(rx, dtype=int)
@@ -255,7 +291,6 @@ class Shape():
         #    cv2.waitKey(5)
         # except Exception as e:
         #    print(e)
-
 
         return self.cond(r, crop_list)#rx[cond_], ry[cond_]#rx, ry
 
