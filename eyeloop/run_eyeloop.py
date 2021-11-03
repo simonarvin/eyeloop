@@ -51,10 +51,10 @@ class EyeLoop:
         self.run_importer()
 
     def run(self):
-        try:
-            config.blink = np.load(f"{EYELOOP_DIR}/blink_.npy")[0] * .8
-        except:
-            print("\n(!) NO BLINK DETECTION. Run 'eyeloop --blink 1' to calibrate\n")
+        #try:
+        #    config.blink = np.load(f"{EYELOOP_DIR}/blink_.npy")[0] * .8
+        #except:
+        #    print("\n(!) NO BLINK DETECTION. Run 'eyeloop --blink 1' to calibrate\n")
 
 
         from eyeloop.guis.minimum.minimum_gui import GUI

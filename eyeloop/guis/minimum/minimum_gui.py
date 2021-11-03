@@ -168,9 +168,11 @@ class GUI:
                 # print("Corneal reflex blurring decreased (%s)." % self.CRProcessor.blur)
 
             elif "r" == key:
+
                 self.pupil_processor.binarythreshold += 1
                 # print("Pupil binarization threshold increased (%s)." % self.pupil_processor.binarythreshold)
             elif "f" == key:
+
                 self.pupil_processor.binarythreshold -= 1
                 # print("Pupil binarization threshold decreased (%s)." % self.pupil_processor.binarythreshold)
 
@@ -263,13 +265,13 @@ class GUI:
 
     def pupil(self, source_rgb):
         try:
-            pupil_center, pupil_width, pupil_height, pupil_angle = params = self.pupil_processor.fit_model.params
+            pupil_center, pupil_width, pupil_height, pupil_angle = self.pupil_processor.fit_model.params
 
             cv2.ellipse(source_rgb, tuple_int(pupil_center), tuple_int((pupil_width, pupil_height)), pupil_angle, 0, 360, red, 1)
             self.place_cross(source_rgb, pupil_center, red)
             return True
         except Exception as e:
-            logger.info(e)
+            logger.info(f"pupil not found: {e}")
             return False
 
     def cr_1(self, source_rgb):
@@ -296,19 +298,19 @@ class GUI:
 
     def adj_update(self, img):
         source_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        self.pupil_(source_rgb)
+        #if self.pupil_(source_rgb):
+        self.bin_P = self.bin_stock.copy()
 
-        if self.pupil_(source_rgb):
-            self.bin_P = self.bin_stock.copy()
+        #self.bin_CR = self.bin_stock.copy()
+        self.bin_P[0:20, 0:self.binary_width] = self.bin_stock_txt_selected
 
-            #self.bin_CR = self.bin_stock.copy()
-            self.bin_P[0:20, 0:self.binary_width] = self.bin_stock_txt_selected
+        pupil_area = self.pupil_processor.source
 
-            pupil_area = self.pupil_processor.source
-
-            offset_y = int((self.binary_height - pupil_area.shape[0]) / 2)
-            offset_x = int((self.binary_width - pupil_area.shape[1]) / 2)
-            self.bin_P[offset_y:min(offset_y + pupil_area.shape[0], self.binary_height),
-            offset_x:min(offset_x + pupil_area.shape[1], self.binary_width)] = pupil_area
+        offset_y = int((self.binary_height - pupil_area.shape[0]) / 2)
+        offset_x = int((self.binary_width - pupil_area.shape[1]) / 2)
+        self.bin_P[offset_y:min(offset_y + pupil_area.shape[0], self.binary_height),
+        offset_x:min(offset_x + pupil_area.shape[1], self.binary_width)] = pupil_area
 
         self.cr1_(source_rgb)
         self.cr2_(source_rgb)

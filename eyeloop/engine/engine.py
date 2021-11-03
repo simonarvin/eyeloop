@@ -95,13 +95,23 @@ class Engine:
         Fourth, pupil is detected.
         Finally, data is logged and extractors are run.
         """
+        mean_img = np.mean(img)
+        try:
+
+            config.blink[config.blink_i] = mean_img
+            config.blink_i += 1
+
+        except IndexError:
+            config.blink_i = 0
 
         self.dataout = {
             "time": time.time()
         }
 
-        if np.mean(img) < config.blink:
+
+        if mean_img < np.mean(config.blink):
             self.dataout["blink"] = 1
+
         else:
 
             self.pupil_processor.track(img)

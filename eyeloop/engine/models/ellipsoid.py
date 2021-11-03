@@ -29,7 +29,7 @@ class Ellipse:
         self.shape_processor = processor
         self.params = None
 
-    def fit(self, x, y):
+    def fit(self, r):
         """Least Squares fitting algor6ithm
         Theory taken from (*)
         Solving equation Sa=lCa. with a = |a b c d f g> and a1 = |a b c>
@@ -43,6 +43,9 @@ class Ellipse:
         coef (list): list of the coefficients describing an ellipse
            [a,b,c,d,f,g] corresponding to ax**2+2bxy+cy**2+2dx+2fy+g
         """
+
+        x, y = r[:,0], r[:,1]
+        
 
         # Quadratic part of design matrix [eqn. 15] from (*)
 
