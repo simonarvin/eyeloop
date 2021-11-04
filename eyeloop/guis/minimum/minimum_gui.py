@@ -150,6 +150,7 @@ class GUI:
             elif "w" == key:
 
                 self.current_cr_processor.binarythreshold += 1
+
                 # print("Corneal reflex binarization threshold increased (%s)." % self.CRProcessor.binarythreshold)
 
             elif "s" == key:
@@ -159,12 +160,12 @@ class GUI:
 
             elif "e" == key:
 
-                self.current_cr_processor.blur = tuple([x + 2 for x in self.cr_processor.blur])
+                self.current_cr_processor.blur = tuple([x + 2 for x in self.current_cr_processor.blur])
                 # print("Corneal reflex blurring increased (%s)." % self.CRProcessor.blur)
 
             elif "d" == key:
 
-                self.current_cr_processor.blur -= tuple([x - 2 for x in self.cr_processor.blur])
+                self.current_cr_processor.blur -= tuple([x - 2 for x in self.current_cr_processor.blur])
                 # print("Corneal reflex blurring decreased (%s)." % self.CRProcessor.blur)
 
             elif "r" == key:
@@ -298,12 +299,17 @@ class GUI:
 
     def adj_update(self, img):
         source_rgb = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-        self.pupil_(source_rgb)
+
         #if self.pupil_(source_rgb):
         self.bin_P = self.bin_stock.copy()
 
+        if self.pupil_(source_rgb):
+            self.bin_P[0:20, 0:self.binary_width] = self.bin_stock_txt_selected
+        else:
+            self.bin_P[0:20, 0:self.binary_width] = self.bin_stock_txt
+
         #self.bin_CR = self.bin_stock.copy()
-        self.bin_P[0:20, 0:self.binary_width] = self.bin_stock_txt_selected
+
 
         pupil_area = self.pupil_processor.source
 
@@ -314,6 +320,24 @@ class GUI:
 
         self.cr1_(source_rgb)
         self.cr2_(source_rgb)
+
+        self.bin_CR = self.bin_stock.copy()
+
+        try:
+            cr_area = self.current_cr_processor.source
+            offset_y = int((self.binary_height - cr_area.shape[0]) / 2)
+            offset_x = int((self.binary_width - cr_area.shape[1]) / 2)
+            self.bin_CR[offset_y:min(offset_y + cr_area.shape[0], self.binary_height),
+            offset_x:min(offset_x + cr_area.shape[1], self.binary_width)] = cr_area
+            self.bin_CR[0:20, 0:self.binary_width] = self.crstock_txt_selected
+        except:
+            self.bin_CR[0:20, 0:self.binary_width] = self.crstock_txt
+            pass
+
+
+
+
+        #print(cr_area)
 
         cv2.imshow("BINARY", np.vstack((self.bin_P, self.bin_CR)))
         cv2.imshow("CONFIGURATION", source_rgb)

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Center_class():
     def fit(self, r):
+
         self.params = tuple(np.mean(r, axis = 0))
         return self.params
 
@@ -45,7 +46,7 @@ class Shape():
                 self.fit_model = Ellipse(self)
 
             self.min_radius = 1
-            self.max_radius = 30 #change according to video size or argument
+            self.max_radius = 40 #change according to video size or argument
             self.cond = self.cond_
             #self.clip = lambda x:None
             self.clip = self.clip_
@@ -65,8 +66,8 @@ class Shape():
             #self.artefact = self.artefact_
             self.fit_model = Center_class()#Circle(self)
 
-            self.min_radius = 2
-            self.max_radius = 5 #change according to video size or argument
+            self.min_radius = 1
+            self.max_radius = 20 #change according to video size or argument
 
             self.thresh = self.cr_thresh
 
@@ -155,7 +156,8 @@ class Shape():
 
             self.center = self.fit_model.fit(r)
 
-            #params = self.fit_model.params
+            params = self.fit_model.params
+
             #self.artefact(params)
 
             config.engine.dataout[self.type_entry] = self.fit_model.params#params
@@ -198,7 +200,7 @@ class Shape():
 
         try:
 
-            center = np.array(self.center, dtype=int)
+            center = np.round(self.center).astype(int)
         except:
             #nonetype
 
@@ -278,11 +280,10 @@ class Shape():
         #diag_matrix = main_diagonal[:canvas_.shape[0], :canvas_.shape[1]]
 
         try:
-            center = np.array(self.center, dtype=int)
+            center = np.round(self.center).astype(int)
         except:
-            #nonetype
-
             return
+
         #canvas = np.array(self.source, dtype=int)#.copy()
 
         r = rr_2d_cr.copy()
@@ -294,13 +295,13 @@ class Shape():
 
         canvas_ = self.source[center[1]:, center[0]:]
 
-        crop_list[0] = np.argmax(canvas_[:, 0] == 0) #- 1
+        crop_list[0] = np.argmax(canvas_[:, 0][self.min_radius:self.max_radius] == 0) #- 1
         #crop_ = np.argmax(canvas_[:, 0] == 0) #- 1
 
         #ry[0], rx[0] = crop_ + center[1], center[0]
 
 
-        crop_list[2] = np.argmax(canvas_[0, :] == 0) #- 1
+        crop_list[2] = np.argmax(canvas_[0, :][self.min_radius:self.max_radius] == 0) #- 1
         #crop_ = np.argmax(canvas_[0, :] == 0) #- 1
 
     #    ry[2], rx[2] = center[1], crop_ + center[0]
@@ -308,13 +309,13 @@ class Shape():
 
         canvas = np.flip(self.source) # flip once
 
-        crop_list[3] = -np.argmax(canvas[-center[1], -center[0]:] == 0)# - 1
+        crop_list[3] = -np.argmax(canvas[-center[1], -center[0]:][self.min_radius:self.max_radius] == 0) - 1
         #crop_ = np.argmax(canvas[-center[1], -center[0]:] == 0)# - 1
 
         #ry[3], rx[3] = center[1], -crop_ + center[0]
 
 
-        crop_list[1]= -np.argmax(canvas[-center[1]:, -center[0]] == 0) #- 1
+        crop_list[1]= -np.argmax(canvas[-center[1]:, -center[0]][self.min_radius:self.max_radius] == 0) - 1
     #    crop_ = np.argmax(canvas[-center[1]:, -center[0]] == 0)
 
         #ry[1], rx[1] = -crop_ + center[1], center[0]
@@ -322,24 +323,26 @@ class Shape():
 
         #print(r, crop_list)
         r[:,:] = center
+
         r[:2, 1] += crop_list[:2]
         r[2:, 0] += crop_list[2:]
+
         #print(r, rx, ry)
 
-        # try:
-        #
-        #    canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
-        #
-        #   # canvas_rgb[cy,cx] = [0,0,255]
-        #    canvas_rgb[ry.astype("int"), rx.astype("int")] = [0,255,0]
-        #    canvas_rgb[r[:,1].astype("int"), r[:,0].astype("int")] = [0,0,255]
-        #    #canvas_rgb[center[1], center[0]] = [255,0,0]
-        #    #rx1,ry1 = self.cond(rx, ry, crop_list)
-        #   # canvas_rgb[ry1.astype("int"), rx1.astype("int")] = [0,255,0]
-        #    cv2.imshow("JJJ", canvas_rgb)
-        #    cv2.waitKey(5)
-        # except Exception as e:
-        #    print(e)
+        try:
+
+           canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
+
+          # canvas_rgb[cy,cx] = [0,0,255]
+           #canvas_rgb[ry.astype("int"), rx.astype("int")] = [0,255,0]
+           canvas_rgb[r[:,1].astype("int"), r[:,0].astype("int")] = [0,0,255]
+           #canvas_rgb[center[1], center[0]] = [255,0,0]
+           #rx1,ry1 = self.cond(rx, ry, crop_list)
+          # canvas_rgb[ry1.astype("int"), rx1.astype("int")] = [0,255,0]
+           cv2.imshow("JJJ", canvas_rgb)
+           cv2.waitKey(5)
+        except Exception as e:
+           print(e)
 
 
         return r#rx[cond_], ry[cond_]#rx, ry
