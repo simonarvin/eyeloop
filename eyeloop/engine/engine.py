@@ -21,6 +21,7 @@ class Engine:
 
         self.eyeloop = eyeloop
         self.model = config.arguments.model  # Used for assigning appropriate circular model.
+
         self.extractors = []
 
         if config.arguments.tracking == 0:  # Recording mode. --tracking 0
@@ -83,14 +84,19 @@ class Engine:
 
         self.iterate(image)
 
-
+        if config.arguments.blinkcalibration != "":
+            config.blink = np.load(config.arguments.blinkcalibration)
+            self.blink_sampled = lambda _:None
+            logger.info("(success) blink calibration loaded")
 
         if config.arguments.clear == False or config.arguments.params != "":
 
             try:
                 if config.arguments.params != "":
                     latest_params = max(glob.glob(config.arguments.params), key=os.path.getctime)
+
                     print(config.arguments.params + " loaded")
+
                 else:
                     latest_params = max(glob.glob(PARAMS_DIR + "/*.npy"), key=os.path.getctime)
 
@@ -102,21 +108,42 @@ class Engine:
                 self.cr_processor_2.binarythreshold, self.cr_processor_2.blur = params_["cr2"][0], params_["cr2"][1]
 
                 print("(!) Parameters reloaded. Run --clear 1 to prevent this.")
+
+
+                param_dict = {
+                "pupil" : [self.pupil_processor.binarythreshold, self.pupil_processor.blur],
+                "cr1" : [self.cr_processor_1.binarythreshold, self.cr_processor_1.blur],
+                "cr2" : [self.cr_processor_2.binarythreshold, self.cr_processor_2.blur]
+                }
+
+                logger.info(f"loaded parameters:\n{param_dict}")
+
                 return
 
-            except Exception as e:
-                print(e)
+            except:
                 pass
 
         self.pupil_processor.binarythreshold = float(np.min(image)) * .7 + 50
         self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(image)) * .7 + 150
 
+        param_dict = {
+        "pupil" : [self.pupil_processor.binarythreshold, self.pupil_processor.blur],
+        "cr1" : [self.cr_processor_1.binarythreshold, self.cr_processor_1.blur],
+        "cr2" : [self.cr_processor_2.binarythreshold, self.cr_processor_2.blur]
+        }
+
+        logger.info(f"loaded parameters:\n{param_dict}")
+
+
     def blink_sampled(self, t:int = 1):
         if t == 1:
-            if config.blink_i% 10 == 0:
+            if config.blink_i% 20 == 0:
                 print(f"calibrating blink detector {round(config.blink_i/config.blink.shape[0]*100,1)}%")
         else:
             logger.info("(success) blink detection calibrated")
+            path = f"{config.file_manager.new_folderpath}/blinkcalibration_{self.dataout['time']}.npy"
+            np.save(path, config.blink)
+            print("blink calibration file saved")
 
     def track(self, img) -> None:
         """
@@ -191,7 +218,7 @@ class Engine:
         "cr2" : [self.cr_processor_2.binarythreshold, self.cr_processor_2.blur]
         }
 
-        path = f"{PARAMS_DIR}/params_{self.dataout['time']}.npy"
+        path = f"{config.file_manager.new_folderpath}/params_{self.dataout['time']}.npy"
         np.save(path, param_dict)
         print("Parameters saved")
 

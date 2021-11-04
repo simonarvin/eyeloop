@@ -63,6 +63,9 @@ class Arguments:
         parser.add_argument("-p", "--params", default="", type=str,
                             help="Load pupil/cr parameter file (.npy)")
 
+        parser.add_argument("-b", "--blink", default="", type=str,
+                            help="Load blink calibration file (.npy)")
+
         return parser.parse_args(args)
 
     def build_config(self, parsed_args):
@@ -85,6 +88,7 @@ class Arguments:
         self.fps = parsed_args.framerate
         self.clear = parsed_args.clear
         self.params = parsed_args.params
+        self.blinkcalibration = parsed_args.blink
         #self.blink = parsed_args.blink
 
     def parse_config(self, config: str) -> None:
