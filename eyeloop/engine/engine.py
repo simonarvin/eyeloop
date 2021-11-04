@@ -123,8 +123,10 @@ class Engine:
             except:
                 pass
 
-        self.pupil_processor.binarythreshold = float(np.min(image)) * .7 + 50
-        self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(image)) * .7 + 150
+
+        filtered_image = image[np.logical_and((image < 200), (image > 50))]
+        self.pupil_processor.binarythreshold = float(np.min(filtered_image)) * .7 + 50
+        self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(filtered_image)) * .7 + 150
 
         param_dict = {
         "pupil" : [self.pupil_processor.binarythreshold, self.pupil_processor.blur],
@@ -136,6 +138,7 @@ class Engine:
 
 
     def blink_sampled(self, t:int = 1):
+
         if t == 1:
             if config.blink_i% 20 == 0:
                 print(f"calibrating blink detector {round(config.blink_i/config.blink.shape[0]*100,1)}%")
@@ -171,6 +174,7 @@ class Engine:
         }
 
         if np.abs(mean_img - np.mean(config.blink[np.nonzero(config.blink)])) > 5:
+
             self.dataout["blink"] = 1
             self.pupil_processor.fit_model.params = None
             logger.info("Blink detected.")
