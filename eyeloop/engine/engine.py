@@ -21,7 +21,7 @@ class Engine:
         self.eyeloop = eyeloop
         self.model = config.arguments.model  # Used for assigning appropriate circular model.
         self.extractors = []
-        self.blink_threshold = config.arguments.bthreshold
+
 
         if config.arguments.tracking == 0:  # Recording mode. --tracking 0
             self.iterate = self.record
@@ -86,10 +86,14 @@ class Engine:
         import glob
         import os
 
-        if config.arguments.clear == False:
+        if config.arguments.clear == False and config.arguments.params != "":
 
             try:
-                latest_params = max(glob.glob(PARAMS_DIR + "/*.npy"), key=os.path.getctime)
+                if config.arguments.params != "":
+                    latest_params = max(glob.glob(config.arguments.params), key=os.path.getctime)
+                    print(config.arguments.params + " loaded")
+                else:
+                    latest_params = max(glob.glob(PARAMS_DIR + "/*.npy"), key=os.path.getctime)
 
                 params_ = np.load(latest_params, allow_pickle=True).tolist()
 

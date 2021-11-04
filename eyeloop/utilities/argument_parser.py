@@ -41,8 +41,6 @@ class Arguments:
                             help="Enable/disable artifact removing markers (0: disable/default; 1: enable)")
         parser.add_argument("-tr", "--tracking", default=1, type=int,
                             help="Enable/disable tracking (1/enabled: default).")
-        parser.add_argument("-bt", "--bthreshold", default=-1, type=float,
-                            help="Set blink threshold manually (0-255).")
 
         parser.add_argument("-ex", "--extractors", default="", type=str,
                             help="Set file-path of extractor Python file. p = start file prompt.")
@@ -56,12 +54,14 @@ class Arguments:
         parser.add_argument("-rt", "--rotation", default=0, type=int,
                             help="Enable online rotation (yes/no, 1/0; default = 0)")
 
-
         parser.add_argument("-fps", "--framerate", default=1, type=float,
                             help="How often to update preview window  (default = 1/second)")
 
         parser.add_argument("-cl", "--clear", default=0, type=float,
                             help="Clear parameters (yes/no, 1/0) - default = 0")
+
+        parser.add_argument("-p", "--params", default="", type=str,
+                            help="Load pupil/cr parameter file (.npy)")
 
         return parser.parse_args(args)
 
@@ -78,13 +78,13 @@ class Arguments:
         self.scale = parsed_args.scale
         self.tracking = parsed_args.tracking
         self.model = parsed_args.model.lower()
-        self.bthreshold = parsed_args.bthreshold
         self.extractors = parsed_args.extractors
         self.img_format = parsed_args.img_format
         self.save = parsed_args.save
         self.rotation = parsed_args.rotation
         self.fps = parsed_args.framerate
         self.clear = parsed_args.clear
+        self.params = parsed_args.params
         #self.blink = parsed_args.blink
 
     def parse_config(self, config: str) -> None:
