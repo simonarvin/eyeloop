@@ -28,6 +28,7 @@ EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed
 - [User interface](#graphical-user-interface)
 - [Authors](#authors)
 - [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples)
+- [*EyeLoop Playground*](https://github.com/simonarvin/eyeloop_playground)
 
 ## How it works ##
 <p align="center">
@@ -178,6 +179,9 @@ eyeloop --extractors path/to/test_ex.py
 ```
 
 > See [Examples](https://github.com/simonarvin/eyeloop/blob/master/examples) for demo recordings and experimental designs.
+
+> For extensive test data, see [*EyeLoop Playground*](https://github.com/simonarvin/eyeloop_playground)
+
 
 ## Data ##
 EyeLoop produces a json-datalog for each eye-tracking session. The datalog's first column is the timestamp.
