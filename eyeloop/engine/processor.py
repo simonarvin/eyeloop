@@ -46,7 +46,7 @@ class Shape():
                 self.fit_model = Ellipse(self)
 
             self.min_radius = 1
-            self.max_radius = 40 #change according to video size or argument
+            self.max_radius = 100 #change according to video size or argument
             self.cond = self.cond_
             #self.clip = lambda x:None
             self.clip = self.clip_
@@ -154,6 +154,7 @@ class Shape():
 
             r = self.walkout()
 
+
             self.center = self.fit_model.fit(r)
 
             params = self.fit_model.params
@@ -163,7 +164,7 @@ class Shape():
             config.engine.dataout[self.type_entry] = self.fit_model.params#params
         except IndexError:
 
-            logger.info(f"fit indexrror")
+            logger.info(f"fit index error")
             self.center_adj()
         except Exception as e:
 
@@ -202,9 +203,9 @@ class Shape():
 
             center = np.round(self.center).astype(int)
         except:
-            #nonetype
 
             return
+
 
         canvas = np.array(self.source, dtype=int)#.copy()
         canvas[-1,:] =canvas[:,-1] = canvas[0,:] = canvas[:,0] = 0
@@ -241,6 +242,7 @@ class Shape():
         np.argmax(crop_canvas3[third_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0), np.argmax(canvas_[invthird_diagonal[:canv_shape0, :canv_shape1]][self.min_radius:self.max_radius] == 0), np.argmax(crop_canvas2[invthird_diagonal[:crop_canv2_shape0, :crop_canv2_shape1]][self.min_radius:self.max_radius] == 0),
         np.argmax(crop_canvas[invthird_diagonal[:crop_canv_shape0, :crop_canv_shape1]][self.min_radius:self.max_radius] == 0), np.argmax(crop_canvas3[invthird_diagonal[:crop_canv3_shape0, :crop_canv3_shape1]][self.min_radius:self.max_radius] == 0)
         ], dtype=int) + self.min_radius
+
 
 
         if np.sum(crop_list) < self.threshold:

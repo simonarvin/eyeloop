@@ -5,17 +5,19 @@ angular_range = np.arange(angular_iter, dtype=np.int8)
 point_source = np.zeros(angular_iter, dtype=np.float64)
 step_list_source = np.zeros(angular_iter, dtype=np.int8)
 
+diagonal_size = 2**10
+
 step_size = np.deg2rad(360 / angular_iter)
 limit = np.arange(250)  # max size of shape; normalize qqqq
 cos_sin_steps = np.array([(np.cos(i * step_size), np.sin(i * step_size)) for i in angular_range], dtype=np.float64)
 
 kernel = np.ones((1, 1), np.uint8)
 
-main_diagonal = np.eye(200, 200, dtype=bool)
+main_diagonal = np.eye(diagonal_size, diagonal_size, dtype=bool)
 
 #atan(1/2.414) = 22.5 ~atan(1/2) = 26.57 deg
 
-half_diagonal = np.full((200,200), False, dtype=bool)
+half_diagonal = np.full((diagonal_size, diagonal_size), False, dtype=bool)
 fourth_diagonal = half_diagonal.copy()
 third_diagonal = half_diagonal.copy()
 onefourth = 1/4

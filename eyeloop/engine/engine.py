@@ -2,6 +2,7 @@ import logging
 import time
 from typing import Optional
 from os.path import dirname, abspath
+import glob, os
 
 import cv2
 
@@ -21,7 +22,6 @@ class Engine:
         self.eyeloop = eyeloop
         self.model = config.arguments.model  # Used for assigning appropriate circular model.
         self.extractors = []
-
 
         if config.arguments.tracking == 0:  # Recording mode. --tracking 0
             self.iterate = self.record
@@ -83,8 +83,7 @@ class Engine:
 
         self.iterate(image)
 
-        import glob
-        import os
+
 
         if config.arguments.clear == False and config.arguments.params != "":
 
@@ -136,7 +135,7 @@ class Engine:
         }
 
 
-        if mean_img < np.mean(config.blink):
+        if mean_img < np.mean(config.blink) * .7:
             self.dataout["blink"] = 1
 
         else:
