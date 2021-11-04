@@ -85,7 +85,7 @@ class Engine:
 
 
 
-        if config.arguments.clear == False and config.arguments.params != "":
+        if config.arguments.clear == False or config.arguments.params != "":
 
             try:
                 if config.arguments.params != "":
@@ -134,10 +134,10 @@ class Engine:
             "time": time.time()
         }
 
-
-        if mean_img < np.mean(config.blink) * .7:
+        if np.abs(mean_img - np.mean(config.blink[np.nonzero(config.blink)])) > 8:
             self.dataout["blink"] = 1
-
+            self.pupil_processor.fit_model.params = None
+            logger.info("Blink detected.")
         else:
 
             self.pupil_processor.track(img)
@@ -171,6 +171,10 @@ class Engine:
         """
         Releases/deactivates all running process, i.e., importers, extractors.
         """
+        try:
+            config.graphical_user_interface.out.release()
+        except:
+            pass
 
         param_dict = {
         "pupil" : [self.pupil_processor.binarythreshold, self.pupil_processor.blur],

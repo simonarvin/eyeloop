@@ -33,6 +33,8 @@ class GUI:
 
 
 
+
+
     def tip_mousecallback(self, event, x: int, y: int, flags, params) -> None:
         if event == cv2.EVENT_LBUTTONDOWN:
             if 10 < y < 35:
@@ -209,7 +211,7 @@ class GUI:
 
         fourcc = cv2.VideoWriter_fourcc(*'MPEG')
         output_vid = Path(config.file_manager.new_folderpath, "output.avi")
-        #self.out = cv2.VideoWriter(str(output_vid), fourcc, 50.0, (self.width, self.height))
+        self.out = cv2.VideoWriter(str(output_vid), fourcc, 50.0, (self.width, self.height))
 
         self.bin_stock = np.zeros((self.binary_height, self.binary_width))
         self.bin_P = self.bin_stock.copy()
@@ -312,13 +314,15 @@ class GUI:
 
         #self.bin_CR = self.bin_stock.copy()
 
+        try:
+            pupil_area = self.pupil_processor.source
 
-        pupil_area = self.pupil_processor.source
-
-        offset_y = int((self.binary_height - pupil_area.shape[0]) / 2)
-        offset_x = int((self.binary_width - pupil_area.shape[1]) / 2)
-        self.bin_P[offset_y:min(offset_y + pupil_area.shape[0], self.binary_height),
-        offset_x:min(offset_x + pupil_area.shape[1], self.binary_width)] = pupil_area
+            offset_y = int((self.binary_height - pupil_area.shape[0]) / 2)
+            offset_x = int((self.binary_width - pupil_area.shape[1]) / 2)
+            self.bin_P[offset_y:min(offset_y + pupil_area.shape[0], self.binary_height),
+            offset_x:min(offset_x + pupil_area.shape[1], self.binary_width)] = pupil_area
+        except:
+            pass
 
         self.cr1_(source_rgb)
         self.cr2_(source_rgb)
@@ -343,6 +347,7 @@ class GUI:
 
         cv2.imshow("BINARY", np.vstack((self.bin_P, self.bin_CR)))
         cv2.imshow("CONFIGURATION", source_rgb)
+        self.out.write(source_rgb)
 
         self.key_listener(cv2.waitKey(50))
 
@@ -359,4 +364,6 @@ class GUI:
         self.update = lambda _: None
 
         if cv2.waitKey(1) == ord("q"):
+
+
             config.engine.release()

@@ -1,4 +1,6 @@
 import numpy as np
+import eyeloop.config as config
+
 
 angular_iter = 24
 angular_range = np.arange(angular_iter, dtype=np.int8)
