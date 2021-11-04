@@ -124,8 +124,8 @@ class Engine:
                 pass
 
 
-        filtered_image = image[np.logical_and((image < 200), (image > 50))]
-        self.pupil_processor.binarythreshold = float(np.min(filtered_image)) * .7 + 50
+        filtered_image = image[np.logical_and((image < 220), (image > 30))]
+        self.pupil_processor.binarythreshold = np.min(filtered_image) * 1 + np.median(filtered_image) * .1#+ 50
         self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(filtered_image)) * .7 + 150
 
         param_dict = {
@@ -173,7 +173,7 @@ class Engine:
             "time": time.time()
         }
 
-        if np.abs(mean_img - np.mean(config.blink[np.nonzero(config.blink)])) > 5:
+        if np.abs(mean_img - np.mean(config.blink[np.nonzero(config.blink)])) > 10:
 
             self.dataout["blink"] = 1
             self.pupil_processor.fit_model.params = None

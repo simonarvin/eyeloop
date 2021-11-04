@@ -347,7 +347,7 @@ class GUI:
 
         cv2.imshow("BINARY", np.vstack((self.bin_P, self.bin_CR)))
         cv2.imshow("CONFIGURATION", source_rgb)
-        self.out.write(source_rgb)
+        #self.out.write(source_rgb)
 
         self.key_listener(cv2.waitKey(50))
 
