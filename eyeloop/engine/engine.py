@@ -111,6 +111,12 @@ class Engine:
         self.pupil_processor.binarythreshold = float(np.min(image)) * .7 + 50
         self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(image)) * .7 + 150
 
+    def blink_sampled(self, t:int = 1):
+        if t == 1:
+            if config.blink_i% 10 == 0:
+                print(f"calibrating blink detector {round(config.blink_i/config.blink.shape[0]*100,1)}%")
+        else:
+            logger.info("(success) blink detection calibrated")
 
     def track(self, img) -> None:
         """
@@ -126,15 +132,18 @@ class Engine:
 
             config.blink[config.blink_i] = mean_img
             config.blink_i += 1
+            self.blink_sampled(1)
 
         except IndexError:
+            self.blink_sampled(0)
+            self.blink_sampled = lambda _:None
             config.blink_i = 0
 
         self.dataout = {
             "time": time.time()
         }
 
-        if np.abs(mean_img - np.mean(config.blink[np.nonzero(config.blink)])) > 8:
+        if np.abs(mean_img - np.mean(config.blink[np.nonzero(config.blink)])) > 5:
             self.dataout["blink"] = 1
             self.pupil_processor.fit_model.params = None
             logger.info("Blink detected.")
@@ -157,7 +166,7 @@ class Engine:
 
     def activate(self) -> None:
         """
-        Ativates all extractors.
+        Activates all extractors.
         The extractor activate() function is optional.
         """
 
