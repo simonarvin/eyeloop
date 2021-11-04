@@ -291,7 +291,7 @@ class GUI:
             #cr_center, cr_width, cr_height, cr_angle = params = self.cr_processor_2.fit_model.params
 
             #cv2.ellipse(source_rgb, tuple_int(cr_center), tuple_int((cr_width, cr_height)), cr_angle, 0, 360, green, 1)
-            self.place_cross(source_rgb, self.cr_processor_1.center, green)
+            self.place_cross(source_rgb, self.cr_processor_2.center, green)
             return True
         except Exception as e:
             logger.info(f"cr2 func: {e}")

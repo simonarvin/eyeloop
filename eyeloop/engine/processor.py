@@ -329,20 +329,20 @@ class Shape():
 
         #print(r, rx, ry)
 
-        try:
-
-           canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
-
-          # canvas_rgb[cy,cx] = [0,0,255]
-           #canvas_rgb[ry.astype("int"), rx.astype("int")] = [0,255,0]
-           canvas_rgb[r[:,1].astype("int"), r[:,0].astype("int")] = [0,0,255]
-           #canvas_rgb[center[1], center[0]] = [255,0,0]
-           #rx1,ry1 = self.cond(rx, ry, crop_list)
-          # canvas_rgb[ry1.astype("int"), rx1.astype("int")] = [0,255,0]
-           cv2.imshow("JJJ", canvas_rgb)
-           cv2.waitKey(5)
-        except Exception as e:
-           print(e)
+        # try:
+        #
+        #    canvas_rgb = cv2.cvtColor(self.source, cv2.COLOR_GRAY2RGB)
+        #
+        #   # canvas_rgb[cy,cx] = [0,0,255]
+        #    #canvas_rgb[ry.astype("int"), rx.astype("int")] = [0,255,0]
+        #    canvas_rgb[r[:,1].astype("int"), r[:,0].astype("int")] = [0,0,255]
+        #    #canvas_rgb[center[1], center[0]] = [255,0,0]
+        #    #rx1,ry1 = self.cond(rx, ry, crop_list)
+        #   # canvas_rgb[ry1.astype("int"), rx1.astype("int")] = [0,255,0]
+        #    cv2.imshow("JJJ", canvas_rgb)
+        #    cv2.waitKey(5)
+        # except Exception as e:
+        #    print(e)
 
 
         return r#rx[cond_], ry[cond_]#rx, ry
