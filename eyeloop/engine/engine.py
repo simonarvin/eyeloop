@@ -1,6 +1,7 @@
 import logging
 import time
 from typing import Optional
+from os.path import dirname, abspath
 
 import cv2
 
@@ -10,7 +11,7 @@ from eyeloop.engine.processor import Shape
 from eyeloop.utilities.general_operations import to_int, tuple_int
 
 logger = logging.getLogger(__name__)
-
+PARAMS_DIR = f"{dirname(dirname(abspath(__file__)))}/engine/params"
 
 class Engine:
     def __init__(self, eyeloop):
@@ -82,6 +83,28 @@ class Engine:
 
         self.iterate(image)
 
+        import glob
+        import os
+
+        if config.arguments.clear == False:
+
+            try:
+                latest_params = max(glob.glob(PARAMS_DIR + "/*.npy"), key=os.path.getctime)
+
+                params_ = np.load(latest_params, allow_pickle=True).tolist()
+
+                self.pupil_processor.binarythreshold, self.pupil_processor.blur = params_["pupil"][0], params_["pupil"][1]
+
+                self.cr_processor_1.binarythreshold, self.cr_processor_1.blur = params_["cr1"][0], params_["cr1"][1]
+                self.cr_processor_2.binarythreshold, self.cr_processor_2.blur = params_["cr2"][0], params_["cr2"][1]
+
+                print("(!) Parameters reloaded. Run --clear 1 to prevent this.")
+                return
+
+            except Exception as e:
+                print(e)
+                pass
+
         self.pupil_processor.binarythreshold = float(np.min(image)) * .7 + 50
         self.cr_processor_1.binarythreshold = self.cr_processor_2.binarythreshold = float(np.min(image)) * .7 + 150
 
@@ -146,8 +169,19 @@ class Engine:
         Releases/deactivates all running process, i.e., importers, extractors.
         """
 
+        param_dict = {
+        "pupil" : [self.pupil_processor.binarythreshold, self.pupil_processor.blur],
+        "cr1" : [self.cr_processor_1.binarythreshold, self.cr_processor_1.blur],
+        "cr2" : [self.cr_processor_2.binarythreshold, self.cr_processor_2.blur]
+        }
+
+        path = f"{PARAMS_DIR}/params_{self.dataout['time']}.npy"
+        np.save(path, param_dict)
+        print("Parameters saved")
+
         self.live = False
         config.graphical_user_interface.release()
+
 
         for extractor in self.extractors:
             try:

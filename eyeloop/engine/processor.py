@@ -25,7 +25,7 @@ class Shape():
         self.walkout_offset = 0
 
         self.binarythreshold = -1
-        self.blur = (3, 3)
+        self.blur = [3, 3]
         self.type = type
         self.fit_ = lambda: None
 
@@ -295,13 +295,13 @@ class Shape():
 
         canvas_ = self.source[center[1]:, center[0]:]
 
-        crop_list[0] = np.argmax(canvas_[:, 0][self.min_radius:self.max_radius] == 0) #- 1
+        crop_list[0] = np.argmax(canvas_[:, 0] == 0) #- 1
         #crop_ = np.argmax(canvas_[:, 0] == 0) #- 1
 
         #ry[0], rx[0] = crop_ + center[1], center[0]
 
 
-        crop_list[2] = np.argmax(canvas_[0, :][self.min_radius:self.max_radius] == 0) #- 1
+        crop_list[2] = np.argmax(canvas_[0, :] == 0) #- 1
         #crop_ = np.argmax(canvas_[0, :] == 0) #- 1
 
     #    ry[2], rx[2] = center[1], crop_ + center[0]
@@ -309,13 +309,13 @@ class Shape():
 
         canvas = np.flip(self.source) # flip once
 
-        crop_list[3] = -np.argmax(canvas[-center[1], -center[0]:][self.min_radius:self.max_radius] == 0) - 1
+        crop_list[3] = -np.argmax(canvas[-center[1], -center[0]:] == 0)
         #crop_ = np.argmax(canvas[-center[1], -center[0]:] == 0)# - 1
 
         #ry[3], rx[3] = center[1], -crop_ + center[0]
 
 
-        crop_list[1]= -np.argmax(canvas[-center[1]:, -center[0]][self.min_radius:self.max_radius] == 0) - 1
+        crop_list[1]= -np.argmax(canvas[-center[1]:, -center[0]] == 0)
     #    crop_ = np.argmax(canvas[-center[1]:, -center[0]] == 0)
 
         #ry[1], rx[1] = -crop_ + center[1], center[0]
@@ -326,6 +326,8 @@ class Shape():
 
         r[:2, 1] += crop_list[:2]
         r[2:, 0] += crop_list[2:]
+
+
 
         #print(r, rx, ry)
 

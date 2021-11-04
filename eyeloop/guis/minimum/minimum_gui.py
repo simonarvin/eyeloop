@@ -165,7 +165,8 @@ class GUI:
 
             elif "d" == key:
 
-                self.current_cr_processor.blur -= tuple([x - 2 for x in self.current_cr_processor.blur])
+                if self.current_cr_processor.blur[0] > 1:
+                    self.current_cr_processor.blur -= tuple([x - 2 for x in self.current_cr_processor.blur])
                 # print("Corneal reflex blurring decreased (%s)." % self.CRProcessor.blur)
 
             elif "r" == key:
@@ -180,11 +181,12 @@ class GUI:
             elif "t" == key:
 
                 self.pupil_processor.blur = tuple([x + 2 for x in self.pupil_processor.blur])
+
                 # print("Pupil blurring increased (%s)." % self.pupil_processor.blur)
 
             elif "g" == key:
-
-                self.pupil_processor.blur = tuple([x - 2 for x in self.pupil_processor.blur])
+                if self.pupil_processor.blur[0] > 1:
+                    self.pupil_processor.blur = tuple([x - 2 for x in self.pupil_processor.blur])
                 # print("Pupil blurring decreased (%s)." % self.pupil_processor.blur)
 
         if "q" == key:

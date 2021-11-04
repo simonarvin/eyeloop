@@ -39,10 +39,10 @@ class EyeLoop:
         if logger is None:
             logger, logger_filename = setup_logging(log_dir=config.file_manager.new_folderpath, module_name="run_eyeloop")
 
-        if config.arguments.blink == 0:
-            self.run()
-        else:
-            self.test_blink()
+        #if config.arguments.blink == 0:
+        self.run()
+        #else:
+        #    self.test_blink()
 
     def test_blink(self):
         from eyeloop.guis.blink_test import GUI

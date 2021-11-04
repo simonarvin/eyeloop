@@ -60,8 +60,8 @@ class Arguments:
         parser.add_argument("-fps", "--framerate", default=1, type=float,
                             help="How often to update preview window  (default = 1/second)")
 
-        parser.add_argument("-b", "--blink", default=0, type=float,
-                            help="Run blink test (yes/no, 1/0)")
+        parser.add_argument("-cl", "--clear", default=0, type=float,
+                            help="Clear parameters (yes/no, 1/0) - default = 0")
 
         return parser.parse_args(args)
 
@@ -84,7 +84,8 @@ class Arguments:
         self.save = parsed_args.save
         self.rotation = parsed_args.rotation
         self.fps = parsed_args.framerate
-        self.blink = parsed_args.blink
+        self.clear = parsed_args.clear
+        #self.blink = parsed_args.blink
 
     def parse_config(self, config: str) -> None:
         with open(config, "r") as content:
