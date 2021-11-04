@@ -114,6 +114,8 @@ eyeloop --model ellipsoid/circular
 ```
 > In general, the ellipsoid pupil model is best suited for rodents, whereas the circular model is best suited for primates.
 
+To learn how to optimize EyeLoop for your video material, see [*EyeLoop Playground*](https://github.com/simonarvin/eyeloop_playground).
+
 To see all command-line arguments, pass:
 
 ```
