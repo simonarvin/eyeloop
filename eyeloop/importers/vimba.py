@@ -22,7 +22,7 @@ class Importer(IMPORTER):
             camera.disarm()
 
         image = frame.buffer_data_numpy()
-        height, width = frame.shape
+        height, width = image.shape
 
         self.arm(width, height, image)
 
@@ -42,7 +42,7 @@ class Importer(IMPORTER):
 
         image = self.resize(image)
         self.rotate_(image, config.engine.angle)
-        config.engine.update_feed(image)
+        config.engine.iterate(image)
         self.save(image)
 
         self.frame += 1

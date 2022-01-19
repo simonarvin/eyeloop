@@ -26,6 +26,7 @@ class GUI:
         self.terminate = -1
         self.update = self.adj_update#real_update
         self.skip = 0
+        self.first_run = True
 
         self.pupil_ = lambda _: False
         self.cr1_ = lambda _: False
@@ -350,6 +351,9 @@ class GUI:
         #self.out.write(source_rgb)
 
         self.key_listener(cv2.waitKey(50))
+        if self.first_run:
+            cv2.destroyAllWindows()
+            self.first_run = False
 
 
     def real_update(self, img) -> None:
