@@ -11,14 +11,13 @@
     <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_1.gif?raw=true" align="center" height="150">&nbsp; <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_3.gif?raw=true" align="center" height="150">&nbsp; <img src="https://github.com/simonarvin/eyeloop/blob/master/misc/imgs/sample_4.gif?raw=true" align="center" height="150">
   </p>
 
-EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed-loop experiments on consumer-grade hardware. This software is actively maintained: Users are encouraged to contribute to its development.
+EyeLoop is a Python 3-based eye-tracker tailored specifically to dynamic, closed-loop experiments on consumer-grade hardware. Users are encouraged to contribute to EyeLoop's development.
 
 ## Features ##
 - [x] **High-speed** > 1000 Hz on non-specialized hardware (no dedicated processing units necessary).
 - [x] Modular, readable, **customizable**.
 - [x] **Open-source**, and entirely Python 3.
 - [x] **Works on any platform**, easy installation.
-- [x] **Actively maintained**.
 
 ## Overview ##
 - [How it works](#how-it-works)
@@ -218,19 +217,19 @@ Reports and results will be outputted to `/tests/reports`
 - [ ] Respawning/freezing windows when running *minimum-gui* in Ubuntu.
 
 ## References ##
-If you use any of this code or data, please cite [Arvin et al. 2020] ([preprint](https://www.biorxiv.org/content/10.1101/2020.07.03.186387v1)).
+If you use any of this code or data, please cite [Arvin et al. 2021] ([article](https://www.frontiersin.org/articles/10.3389/fncel.2021.779628/full)).
 ```latex
-@article {Arvin2020.07.03.186387,
-	author = {Arvin, Simon and Rasmussen, Rune and Yonehara, Keisuke},
-	title = {EyeLoop: An open-source, high-speed eye-tracker designed for dynamic experiments},
-	elocation-id = {2020.07.03.186387},
-	year = {2020},
-	doi = {10.1101/2020.07.03.186387},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2020/07/04/2020.07.03.186387},
-	eprint = {https://www.biorxiv.org/content/early/2020/07/04/2020.07.03.186387.full.pdf},
-	journal = {bioRxiv}
+
+@ARTICLE{Arvin2021-tg,
+  title    = "{EyeLoop}: An open-source system for high-speed, closed-loop
+              eye-tracking",
+  author   = "Arvin, Simon and Rasmussen, Rune and Yonehara, Keisuke",
+  journal  = "Front. Cell. Neurosci.",
+  volume   =  15,
+  pages    = "494",
+  year     =  2021
 }
+
 ```
 
 ## License ##
